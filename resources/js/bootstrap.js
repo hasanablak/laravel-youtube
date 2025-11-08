@@ -49,7 +49,7 @@ window.app.mixin(initStore);
 window.app.mixin({
 	methods: {
 		speechText(text) {
-			window.TextToSpeech(text);
+			//window.TextToSpeech(text);
 		}
 	}
 })
