@@ -16,6 +16,7 @@ class HomeController extends Controller
 				$query->where('visibility', 'public')
 					  ->whereNotNull('thumbnail_image');
 			})
+			->whereNotIn("id", config('app.black_list_channel_ids'))
 			->with(['videos' => function($query) {
 				$query->where('visibility', 'public')
 					  ->whereNotNull('thumbnail_image')
@@ -30,7 +31,12 @@ class HomeController extends Controller
 			});
 		});
 
-        $videos = Video::orderBy('views','asc')->inRandomOrder()->limit(50)->get();
+        $videos = Video::query()
+		->whereNotIn("id", [config('app.black_list_channel_ids')])
+		->orderBy('views','asc')
+		->inRandomOrder()
+		->limit(50)
+		->get();
 
         return view('pages.index',[
 			"videos" => $videos,

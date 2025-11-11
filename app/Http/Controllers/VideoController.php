@@ -112,7 +112,12 @@ class VideoController extends Controller
             ]);
         }
 
-        $videos = Video::orderBy('views', 'asc')->inRandomOrder()->limit(10)->whereNot('id', $video->id)->get();
+        $videos = Video::orderBy('views', 'asc')
+        ->inRandomOrder()
+        ->limit(10)
+        ->whereNot('id', $video->id)
+        ->whereNotIn("channel_id", config('app.black_list_channel_ids'))
+        ->get();
 
 
 		
