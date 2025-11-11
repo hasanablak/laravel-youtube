@@ -32,7 +32,7 @@ class HomeController extends Controller
 		});
 
         $videos = Video::query()
-		->whereNotIn("id", [config('app.black_list_channel_ids')])
+		->whereNotIn("channel_id", config('app.black_list_channel_ids'))
 		->orderBy('views','asc')
 		->inRandomOrder()
 		->limit(50)
