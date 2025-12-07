@@ -6,12 +6,33 @@ use App\Jobs\ConvertVideoForStreaming;
 use App\Jobs\CreateThumbnailFromVideo;
 use App\Models\Channel;
 use App\Models\Video;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 	class VideoService
 	{
 		public function uploadVideoToStorage($video){;
 			$path = $video->store('public/videos-temp');
 			return $path;
+		}
+
+		public function slugflyFileName(string $file): string{
+			
+			$fileNameWithoutExtension = pathinfo($file, PATHINFO_FILENAME);
+			$extension = pathinfo($file, PATHINFO_EXTENSION);
+			$fileNameSlugWithoutExtension = Str::slug($fileNameWithoutExtension);
+
+			$newSlugFileNameWithExtension = $fileNameSlugWithoutExtension . '.' . $extension;
+			$dir = dirname($file);
+			$dir = $dir === '.' ? '' : $dir;
+
+			$newRelativePath = $dir === '' 
+				? $newSlugFileNameWithExtension 
+				: $dir . '/' . $newSlugFileNameWithExtension;
+			
+			Storage::disk('manuel-videos')->move($file, $newRelativePath);
+
+			return $newRelativePath;
 		}
 
 	    public function saveVideoToDatabase($channel, $path, $settings = [], $video_orginal_url = null): Video
@@ -21,17 +42,19 @@ use App\Models\Video;
 
 			$filename = basename($path);
 
-
+			
 			$video = $channel->videos()
 				->create([
 					'title' => $settings['title'],
 					'description' => $settings['description'] ?? null,
 					'uid' => uniqid(true),
 					'visibility' => $settings['visibility'] ?? "public",
-					//'path' => $filename,
 					'video_orginal_path' => $path,
 					'image' => $settings['image'] ?? null,
 					'video_orginal_url' => $video_orginal_url ?? null,
+					'video_orginal_name' =>  $settings['video_orginal_name'],
+					'video_slug_url' => $settings['video_slug_url'] ?? null,
+					'video_slug_path' => $settings['video_slug_path'] ?? null,
 					'file_hash' => $settings['file_hash'] ?? null,
 				]);
 

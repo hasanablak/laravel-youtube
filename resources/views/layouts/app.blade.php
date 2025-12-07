@@ -43,6 +43,7 @@
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white">
 <!-- Sol Sidebar -->
+@if(false)
 <aside id="sidebar" class="fixed left-0 top-0 h-full w-[280px] bg-white dark:bg-slate-800 shadow-lg z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
     <div class="flex flex-col h-full overflow-hidden">
         <!-- Logo Bölümü -->
@@ -204,9 +205,11 @@
     </nav>
 
 </aside>
-
+@endif
 <!-- Üst Menü -->
-<nav class="fixed top-0 right-0 left-0 bg-white dark:bg-slate-800 shadow-sm z-20 lg:pl-[320px]">
+<nav class="fixed top-0 right-0 left-0 bg-white dark:bg-slate-800 shadow-sm z-20
+
+@if(false) lg:pl-[320px] @endif">
     <div class="flex items-center justify-between h-16 px-4">
         <!-- Sol Bölüm - Mobil Menü -->
         <div class="lg:hidden flex items-center">
@@ -359,7 +362,7 @@
     </div>
 </nav>
 <div id="app" class="flex flex-col min-h-8">
-    <main class="flex-grow pt-14 lg:pl-[320px]">
+    <main class="flex-grow pt-14 @if(false) lg:pl-[320px] @endif">
         @yield('content')
     </main>
 </div>

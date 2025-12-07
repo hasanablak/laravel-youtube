@@ -70,6 +70,7 @@ class ManuelVideoUpdater extends Command
 
             // Bu klasördeki her dosya için işlem yap
             foreach ($filesInFolder as $index => $file) {
+			
 				// Dosya uzantısını kontrol et
 				$extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 				$allowedExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm', 'm4v'];
@@ -95,8 +96,8 @@ class ManuelVideoUpdater extends Command
 				}
 
 				// Dosyayı al veya path'i kullan
-
-				$diskPath = 'storage/app/public/manuel-videos/' . $file;
+				$diskPath_ = 'storage/app/public/manuel-videos/';
+				$diskPath =  $diskPath_ . $file;
 				$fileName = basename($file); // '1-bolu.mov'
 				
 				// $videoPath = app(VideoService::class)->uploadVideoToStorage(
@@ -105,19 +106,27 @@ class ManuelVideoUpdater extends Command
 				$title = Str::beforeLast($fileName, '[');
 				$title = Str::beforeLast($title, '.');
 
+				//Change file name to slug version
+
+
+				$slugflyFileName = app(VideoService::class)->slugflyFileName($file);
+
 				$video = app(VideoService::class)
 					->saveVideoToDatabase($channel->uid, $diskPath, [
 						'title' =>  $title,
 						'description' => null,
 						'visibility' => "public",
 						'file_hash' => $fileHash,
+						'video_orginal_name' => $fileName,
+						'video_slug_url' => config('app.url') . '/storage/manuel-videos/' . $slugflyFileName,
+						'video_slug_path' => $diskPath_ . $slugflyFileName,
 					],
-					config('app.url') . '/storage/manuel-videos/' . $file
+					config('app.url') . '/storage/manuel-videos/' . $slugflyFileName
 				);
 
 				app(VideoService::class)->generateThumbnail($video, 'manuel-videos');
-				
 				$this->info('✅ Video başarıyla eklendi');
+
 			}
         }
 

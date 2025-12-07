@@ -27,7 +27,7 @@ class CreateThumbnailFromVideo implements ShouldQueue
     {
         $this->video = $video;
 		$this->disk = $disk;
-		$this->video_path = $video_path == null ? str_replace('storage/app/public/'.$disk.'/', '', $video->video_orginal_path) : $video_path;
+		$this->video_path = $video_path == null ? str_replace('storage/app/public/'.$disk.'/', '', $video->video_slug_path) : $video_path;
     }
 
     /**
@@ -38,6 +38,7 @@ class CreateThumbnailFromVideo implements ShouldQueue
     public function handle()
     {
         $destination = '/' . $this->video->uid . '/' . $this->video->uid . '.png';
+       
         FFMpeg::fromDisk($this->disk)
             ->open($this->video_path)
             ->getFrameFromSeconds(rand(60, 500))
