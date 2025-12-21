@@ -97,6 +97,14 @@ class VideoController extends Controller
 
     public function video($video)
     {
+		if(auth()->check()){
+			$daily_watch_count = WatchHistory::where('user_id', auth()->id())
+				->whereDate('watched_at', now()->toDateString())
+				->count();
+			if ($daily_watch_count >= config('app.daily_video_watch_limit')) {
+				return redirect()->route('errors.video-watch-limit-reached');
+			}
+		}
         $video = Video::where('uid',$video)->with('channel')->first();
 
 		$video->update([

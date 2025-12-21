@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hayvanları Karşıya Geçir</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 100%);
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #instruction {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 40px;
+            border-radius: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 100;
+            text-align: center;
+        }
+
+        #river {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 200px;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                #4A90E2 0%, 
+                #5BA3F5 25%, 
+                #4A90E2 50%, 
+                #5BA3F5 75%, 
+                #4A90E2 100%);
+            transform: translateX(-50%);
+            animation: flow 3s linear infinite;
+        }
+
+        @keyframes flow {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100px; }
+        }
+
+        .wave {
+            position: absolute;
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: wave-move 2s ease-in-out infinite;
+        }
+
+        .wave:nth-child(1) { top: 10%; animation-delay: 0s; }
+        .wave:nth-child(2) { top: 30%; animation-delay: 0.5s; }
+        .wave:nth-child(3) { top: 50%; animation-delay: 1s; }
+        .wave:nth-child(4) { top: 70%; animation-delay: 1.5s; }
+
+        @keyframes wave-move {
+            0%, 100% { transform: translateY(0) scaleX(1); }
+            50% { transform: translateY(-10px) scaleX(1.1); }
+        }
+
+        .ground {
+            position: absolute;
+            top: 0;
+            width: calc(50% - 100px);
+            height: 100%;
+            background: linear-gradient(to bottom, #90EE90 0%, #7BC87B 100%);
+        }
+
+        .ground-left {
+            left: 0;
+        }
+
+        .ground-right {
+            right: 0;
+        }
+
+        .grass {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background: repeating-linear-gradient(
+                90deg,
+                #228B22 0px,
+                #228B22 5px,
+                #32CD32 5px,
+                #32CD32 10px
+            );
+        }
+
+        .animal {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            cursor: grab;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            z-index: 10;
+        }
+        
+        .animal.dragging {
+            cursor: grabbing;
+            z-index: 1000;
+            transition: none;
+            transform: scale(1.3);
+            animation: bounce 0.5s ease-in-out infinite;
+        }
+        
+        .animal.dragging::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: linear-gradient(45deg, 
+                #ff0000, #ff7f00, #ffff00, #00ff00, 
+                #0000ff, #4b0082, #9400d3, #ff0000);
+            background-size: 400% 400%;
+            border-radius: 50%;
+            filter: blur(15px);
+            opacity: 0.7;
+            z-index: -1;
+            animation: rainbowGlow 1.5s linear infinite;
+        }
+        
+        .animal.dragging::after {
+            content: '✨';
+            position: absolute;
+            font-size: 40px;
+            top: -20px;
+            right: -20px;
+            animation: sparkle 1s ease-in-out infinite;
+        }
+        
+        @keyframes rainbowGlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1.3) translateY(0); }
+            50% { transform: scale(1.3) translateY(-10px); }
+        }
+        
+        @keyframes sparkle {
+            0%, 100% { 
+                opacity: 1; 
+                transform: rotate(0deg) scale(1);
+            }
+            50% { 
+                opacity: 0.5; 
+                transform: rotate(180deg) scale(1.5);
+            }
+        }
+
+        .animal:hover {
+            transform: scale(1.2);
+            filter: brightness(1.1);
+        }
+
+        .animal:active {
+            cursor: grabbing;
+            transform: scale(1.15);
+        }
+
+        .animal.selected {
+            transform: scale(1.1);
+        }
+
+        .animal.selected::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 4px;
+            background: linear-gradient(90deg, #FF6B6B, #FFE66D, #4ECDC4, #FF6B6B);
+            background-size: 200% 100%;
+            border-radius: 2px;
+            animation: underlineGlow 1.5s linear infinite;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+        }
+
+        @keyframes underlineGlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .animal img {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            pointer-events: none;
+        }
+
+        #result {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 40px 60px;
+            border-radius: 30px;
+            font-size: 48px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 200;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        #result.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .correct {
+            color: #4CAF50;
+        }
+
+        .incorrect {
+            color: #F44336;
+        }
+
+        #next-btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #next-btn:hover {
+            background: #45a049;
+        }
+
+        #speaker-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #FF6B6B;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 101;
+        }
+		#animals-container {
+			    position: relative;
+			    height: 100vh;
+			    align-items: center;
+			    flex-direction: column;
+			    width: 400px;
+		}
+
+        #speaker-btn:hover {
+            background: #FF5252;
+            transform: scale(1.1);
+        }
+
+        /* Modal Stilleri */
+        #start-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #start-modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 80px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: modalPop 0.5s ease-out;
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h1 {
+            color: white;
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .modal-content p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 24px;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        #start-game-btn {
+            padding: 20px 60px;
+            font-size: 32px;
+            font-weight: bold;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        #start-game-btn:hover {
+            background: #45a049;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        }
+
+        #start-game-btn:active {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Başlangıç Modal -->
+    <div id="start-modal" >
+        <div class="modal-content">
+            <h1>🎮 Hayvanları Karşıya Geçir! 🐑</h1>
+            <p>Söylenen hayvanı nehrin karşısına sürükle<br>ve İngilizce hayvan isimlerini öğren!</p>
+            <button id="start-game-btn" onclick="startGameFromModal()">Oyunu Başlat</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div id="instruction" style="opacity: 0.4;">Hadi <span id="target-word"></span>'i karşıya geçir!</div>
+        <button id="speaker-btn" onclick="speakInstruction()">🔊</button>
+        
+        <div class="ground ground-left">
+            <div class="grass"></div>
+        </div>
+        
+        <div id="river">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+        
+        <div class="ground ground-right">
+            <div class="grass"></div>
+        </div>
+
+        <div id="animals-container"></div>
+
+        <div id="result">
+            <div id="result-text"></div>
+            <button id="next-btn" onclick="nextRound()">Devam Et</button>
+        </div>
+    </div>
+
+    <script>
+        const animals = [
+            { 
+				name: 'sheep', 
+				turkish: 'Koyun', 
+				images: ['./assets/images/sheep.png'],
+				games: [
+					{
+						type: 'basic',
+						files: [
+							'./assets/speech/sheep.mp3',
+							'./assets/speech/sheep-2.mp3'
+						]
+					},
+					{
+						type: 'big-small',
+						files: {
+							big: [
+								{
+									imageProperty: 'width: 150px; height: 150px;',
+									image: './assets/games/big-small/sheep/big-sheep.png',
+									text: `big sheep'in karşıya geçmesi lazım, big sheep'i karşıya geçirir misin? big sheep!`,
+									speech: './assets/games/big-small/sheep/big-sheep.mp3',
+									counter: 1
+								}
+							],
+							small: [
+								{
+									imageProperty: 'width: 75px; height: 75px;',
+									image: './assets/games/big-small/sheep/small-sheep.png',
+									text: `small sheep'in karşıya geçmesi lazım, small sheep'i karşıya geçirir misin? small sheep!`,
+									speech: './assets/games/big-small/sheep/small-sheep.mp3',
+									counter: 1
+								}
+							],
+						}
+					},
+					{
+						type: 'colors',
+						files: {
+							red: './assets/speech/sheep-red.mp3',
+							blue: './assets/speech/sheep-blue.mp3',
+							green: './assets/speech/sheep-green.mp3'
+						}
+					},
+					{
+						type: 'big-small-colors',
+						files: {
+							big: {
+								red: './assets/speech/sheep-big-red.mp3',
+								blue: './assets/speech/sheep-big-blue.mp3',
+								green: './assets/speech/sheep-big-green.mp3'
+							},
+							small: {
+								red: './assets/speech/sheep-small-red.mp3',
+								blue: './assets/speech/sheep-small-blue.mp3',
+								green: './assets/speech/sheep-small-green.mp3'
+							}
+						}
+					}
+				]
+			},
+            { 
+				name: 'cow', 
+				turkish: 'İnek', 
+				images: ['./assets/images/cow.png'],
+				games: [
+					{
+						type: 'basic',
+						files: [
+							'./assets/speech/cow.mp3',
+							'./assets/speech/cow-2.mp3'
+						]
+					},
+					{
+						type: 'big-small',
+						files: {
+							big: [
+								{
+									imageProperty: 'width: 150px; height: 150px;',
+									image: './assets/games/big-small/cow/big-cow.png',
+									text: `big cow'un karşıya geçmesi lazım, big cow'u karşıya geçirir misin? big cow!`,
+									speech: './assets/games/big-small/cow/big-cow.mp3',
+									counter: 1
+								}
+							],
+							small: [
+								{
+									imageProperty: 'width: 75px; height: 75px;',
+									image: './assets/games/big-small/cow/small-cow.png',
+									text: `small cow'un karşıya geçmesi lazım, small cow'u karşıya geçirir misin? small cow!`,
+									speech: './assets/games/big-small/cow/small-cow.mp3',
+									counter: 1
+								}
+							],
+						}
+					},
+					{
+						type: 'colors',
+						files: {
+							red: './assets/speech/cow-red.mp3',
+							blue: './assets/speech/cow-blue.mp3',
+							green: './assets/speech/cow-green.mp3'
+						}
+					},
+					{
+						type: 'big-small-colors',
+						files: {
+							big: {
+								red: './assets/speech/cow-big-red.mp3',
+								blue: './assets/speech/cow-big-blue.mp3',
+								green: './assets/speech/cow-big-green.mp3'
+							},
+							small: {
+								red: './assets/speech/cow-small-red.mp3',
+								blue: './assets/speech/cow-small-blue.mp3',
+								green: './assets/speech/cow-small-green.mp3'
+							}
+						}
+					}
+				]
+			} ,
+            { 
+				name: 'bear', 
+				turkish: 'Ayı', 
+				images: ['./assets/images/bear.png'],
+				games: [
+					{
+						type: 'basic',
+						files: [
+							'./assets/speech/bear.mp3',
+							'./assets/speech/bear-2.mp3'
+						]
+					},
+					{
+						type: 'big-small',
+						files: {
+							big: [
+								{
+									imageProperty: 'width: 150px; height: 150px;',
+									image: './assets/games/big-small/bear/big-bear.gif',
+									text: `big bear'un karşıya geçmesi lazım, big bear'u karşıya geçirir misin? big bear!`,
+									speech: './assets/games/big-small/bear/big-bear.mp3',
+									counter: 1
+								}
+							],
+							small: [
+								{
+									imageProperty: 'width: 75px; height: 75px;',
+									image: './assets/games/big-small/bear/small-bear.png',
+									text: `small bear'un karşıya geçmesi lazım, small bear'u karşıya geçirir misin? small bear!`,
+									speech: './assets/games/big-small/bear/small-bear.mp3',
+									counter: 1
+								}
+							],
+						}
+					},
+					{
+						type: 'colors',
+						files: {
+							red: './assets/speech/bear-red.mp3',
+							blue: './assets/speech/bear-blue.mp3',
+							green: './assets/speech/bear-green.mp3'
+						}
+					},
+					{
+						type: 'big-small-colors',
+						files: {
+							big: {
+								red: './assets/speech/bear-big-red.mp3',
+								blue: './assets/speech/bear-big-blue.mp3',
+								green: './assets/speech/bear-big-green.mp3'
+							},
+							small: {
+								red: './assets/speech/bear-small-red.mp3',
+								blue: './assets/speech/bear-small-blue.mp3',
+								green: './assets/speech/bear-small-green.mp3'
+							}
+						}
+					}
+				]
+			},
+            { 
+				name: 'bird', 
+				turkish: 'Kuş', 
+				images: ['./assets/images/bird.png'],
+				games: [
+					{
+						type: 'basic',
+						files: [
+							'./assets/speech/bird.mp3',
+							'./assets/speech/bird-2.mp3'
+						]
+					},
+					{
+						type: 'big-small',
+						files: {
+							big: [
+								{
+									imageProperty: 'width: 150px; height: 150px;',
+									image: './assets/games/big-small/bird/big-bird.png',
+									text: `big bird'un karşıya geçmesi lazım, big bird'u karşıya geçirir misin? big bird!`,
+									speech: './assets/games/big-small/bird/big-bird.mp3',
+									counter: 1
+								}
+							],
+							small: [
+								{
+									imageProperty: 'width: 75px; height: 75px;',
+									image: './assets/games/big-small/bird/small-bird.png',
+									text: `small bird'un karşıya geçmesi lazım, small bird'u karşıya geçirir misin? small bird!`,
+									speech: './assets/games/big-small/bird/small-bird.mp3',
+									counter: 1
+								}
+							],
+						}
+					},
+					{
+						type: 'colors',
+						files: {
+							red: './assets/speech/bird-red.mp3',
+							blue: './assets/speech/bird-blue.mp3',
+							green: './assets/speech/bird-green.mp3'
+						}
+					},
+					{
+						type: 'big-small-colors',
+						files: {
+							big: {
+								red: './assets/speech/bird-big-red.mp3',
+								blue: './assets/speech/bird-big-blue.mp3',
+								green: './assets/speech/bird-big-green.mp3'
+							},
+							small: {
+								red: './assets/speech/bird-small-red.mp3',
+								blue: './assets/speech/bird-small-blue.mp3',
+								green: './assets/speech/bird-small-green.mp3'
+							}
+						}
+					}
+				]
+			},
+            { 
+				name: 'camel', 
+				turkish: 'Deve', 
+				images: ['./assets/images/camel.png'],
+				games: [
+					{
+						type: 'basic',
+						files: [
+							'./assets/speech/camel.mp3',
+							'./assets/speech/camel-2.mp3'
+						]
+					},
+					{
+						type: 'big-small',
+						files: {
+							big: [
+								{
+									imageProperty: 'width: 150px; height: 150px;',
+									image: './assets/games/big-small/camel/big-camel.png',
+									text: `big camel'un karşıya geçmesi lazım, big camel'u karşıya geçirir misin? big camel!`,
+									speech: './assets/games/big-small/camel/big-camel.mp3',
+									counter: 1
+								}
+							],
+							small: [
+								{
+									imageProperty: 'width: 75px; height: 75px;',
+									image: './assets/games/big-small/camel/small-camel.png',
+									text: `small camel'un karşıya geçmesi lazım, small camel'u karşıya geçirir misin? small camel!`,
+									speech: './assets/games/big-small/camel/small-camel.mp3',
+									counter: 1
+								}
+							],
+						}
+					},
+					{
+						type: 'colors',
+						files: {
+							red: './assets/speech/camel-red.mp3',
+							blue: './assets/speech/camel-blue.mp3',
+							green: './assets/speech/camel-green.mp3'
+						}
+					},
+					{
+						type: 'big-small-colors',
+						files: {
+							big: {
+								red: './assets/speech/camel-big-red.mp3',
+								blue: './assets/speech/camel-big-blue.mp3',
+								green: './assets/speech/camel-big-green.mp3'
+							},
+							small: {
+								red: './assets/speech/camel-small-red.mp3',
+								blue: './assets/speech/camel-small-blue.mp3',
+								green: './assets/speech/camel-small-green.mp3'
+							}
+						}
+					}
+				]
+			}
+		];
+
+        let currentTarget = null;
+        let currentAnimals = [];
+        let draggedAnimal = null;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        // Sayfa yüklendiginde localStorage'den counter'ları yükle
+        function loadCountersFromStorage() {
+            const savedCounters = localStorage.getItem('bigSmallCounters');
+            if (savedCounters) {
+                try {
+                    const countersData = JSON.parse(savedCounters);
+                    // localStorage'deki counter'ları animals dizisine aktar
+                    animals.forEach(animal => {
+                        const bigSmallGame = animal.games.find(game => game.type === 'big-small');
+                        if (bigSmallGame && bigSmallGame.files) {
+                            const savedAnimal = countersData.find(a => a.name === animal.name);
+                            if (savedAnimal) {
+                                // Big counter'larını yükle
+                                if (savedAnimal.big && bigSmallGame.files.big) {
+                                    bigSmallGame.files.big.forEach((bigFile, index) => {
+                                        if (savedAnimal.big[index] !== undefined) {
+                                            bigFile.counter = savedAnimal.big[index];
+                                        }
+                                    });
+                                }
+                                // Small counter'larını yükle
+                                if (savedAnimal.small && bigSmallGame.files.small) {
+                                    bigSmallGame.files.small.forEach((smallFile, index) => {
+                                        if (savedAnimal.small[index] !== undefined) {
+                                            smallFile.counter = savedAnimal.small[index];
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+                    console.log('✅ Counter`lar localStorage`den yüklendi');
+                } catch (e) {
+                    console.error('Counter yüklenirken hata:', e);
+                }
+            }
+        }
+
+        // Counter'ları localStorage'e kaydet
+        function saveCountersToStorage() {
+            const countersData = animals.map(animal => {
+                const bigSmallGame = animal.games.find(game => game.type === 'big-small');
+                const data = {
+                    name: animal.name,
+                    big: [],
+                    small: []
+                };
+                
+                if (bigSmallGame && bigSmallGame.files) {
+                    // Big counter'larını kaydet
+                    if (bigSmallGame.files.big) {
+                        data.big = bigSmallGame.files.big.map(f => f.counter);
+                    }
+                    // Small counter'larını kaydet
+                    if (bigSmallGame.files.small) {
+                        data.small = bigSmallGame.files.small.map(f => f.counter);
+                    }
+                }
+                
+                return data;
+            });
+            localStorage.setItem('bigSmallCounters', JSON.stringify(countersData));
+            console.log('✅ Counter`lar localStorage`e kaydedildi');
+        }
+
+        // SessionStorage'den currentAnimals'ı yükle
+        function loadCurrentAnimalsFromSession() {
+            const savedCurrentAnimals = sessionStorage.getItem('bigSmallCurrentAnimals');
+            if (savedCurrentAnimals) {
+                try {
+                    const sessionAnimals = JSON.parse(savedCurrentAnimals);
+                    // SessionStorage'deki counter'ları animals dizisine aktar
+                    animals.forEach(animal => {
+                        const bigSmallGame = animal.games.find(game => game.type === 'big-small');
+                        if (bigSmallGame && bigSmallGame.files) {
+                            const sessionAnimal = sessionAnimals.find(a => a.name === animal.name);
+                            if (sessionAnimal) {
+                                // Big counter'larını yükle
+                                if (sessionAnimal.big && bigSmallGame.files.big) {
+                                    bigSmallGame.files.big.forEach((bigFile, index) => {
+                                        if (sessionAnimal.big[index] !== undefined) {
+                                            bigFile.counter = sessionAnimal.big[index];
+                                        }
+                                    });
+                                }
+                                // Small counter'larını yükle
+                                if (sessionAnimal.small && bigSmallGame.files.small) {
+                                    bigSmallGame.files.small.forEach((smallFile, index) => {
+                                        if (sessionAnimal.small[index] !== undefined) {
+                                            smallFile.counter = sessionAnimal.small[index];
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                    });
+                } catch (e) {
+                    console.error('Session yüklenirken hata:', e);
+                }
+            }
+        }
+
+        // CurrentAnimals'ı sessionStorage'e kaydet
+        function saveCurrentAnimalsToSession() {
+            const sessionData = animals.map(animal => {
+                const bigSmallGame = animal.games.find(game => game.type === 'big-small');
+                const data = {
+                    name: animal.name,
+                    big: [],
+                    small: []
+                };
+                
+                if (bigSmallGame && bigSmallGame.files) {
+                    // Big counter'larını kaydet
+                    if (bigSmallGame.files.big) {
+                        data.big = bigSmallGame.files.big.map(f => f.counter);
+                    }
+                    // Small counter'larını kaydet
+                    if (bigSmallGame.files.small) {
+                        data.small = bigSmallGame.files.small.map(f => f.counter);
+                    }
+                }
+                
+                return data;
+            });
+            sessionStorage.setItem('bigSmallCurrentAnimals', JSON.stringify(sessionData));
+        }
+
+        // En az oynanan hayvanı seç (counter'a göre)
+        function selectLeastPlayedAnimal() {
+            // Counter'a göre sırala
+            const sortedAnimals = [...animals].sort((a, b) => a.counter - b.counter);
+            
+            // En düşük counter değerini al
+            const minCounter = sortedAnimals[0].counter;
+            
+            // En düşük counter'a sahip tüm hayvanları filtrele
+            const leastPlayed = sortedAnimals.filter(a => a.counter === minCounter);
+            
+            // Bunlar arasından rastgele seç
+            return leastPlayed[Math.floor(Math.random() * leastPlayed.length)];
+        }
+
+        function startGame() {
+            // Big-small oyunu için hayvanları seç
+            const gameData = selectBigSmallGameAnimals();
+            
+            // Global değişkene hedefi kaydet
+            currentTarget = gameData.target;
+            
+            // 3 hayvanı al (karışık halde)
+            currentAnimals = gameData.allAnimals;
+            
+            // Ekrana yerleştir
+            document.getElementById('target-word').textContent = `${currentTarget.size} ${currentTarget.animal.name}`;
+            renderAnimals();
+            
+            // Sesli talimatı 500ms gecikmeyle çal
+            setTimeout(() => {
+                speakInstruction(currentTarget);
+            }, 500);
+        }
+
+        function renderAnimals() {
+            const container = document.getElementById('animals-container');
+            container.innerHTML = '';
+            
+            currentAnimals.forEach((animalData, index) => {
+                const div = document.createElement('div');
+                div.className = 'animal';
+                div.dataset.name = animalData.animal.name;
+                div.dataset.size = animalData.size; // big veya small
+                
+                // gameFile'dan resmi al
+                const imageSource = animalData.gameFile.image;
+                
+                const img = document.createElement('img');
+                img.src = imageSource;
+                img.alt = `${animalData.size} ${animalData.animal.turkish}`;
+                
+                // imageProperty varsa uygula, yoksa default değerler
+                if (animalData.gameFile.imageProperty) {
+                    img.style.cssText = animalData.gameFile.imageProperty;
+                } else {
+                    img.style.width = '180px';
+                    img.style.height = '180px';
+                }
+                
+                div.appendChild(img);
+                
+                const yPos = 10 + (index * 25);
+                div.style.left = '50px';
+                div.style.top = yPos + '%';
+                
+                // Hayvanı tıklama ile seç ve sürükle
+                div.addEventListener('click', handleAnimalClick);
+                
+                container.appendChild(div);
+            });
+        }
+
+        let selectedAnimal = null;
+        let isDragging = false;
+        let initialX = 0;
+        let initialY = 0;
+
+        function handleAnimalClick(e) {
+            e.stopPropagation();
+            const clickedAnimal = e.target.closest('.animal');
+            
+            // Eğer başka bir hayvan sürükleniyorsa, onu bırak
+            if (selectedAnimal && selectedAnimal !== clickedAnimal) {
+                selectedAnimal.classList.remove('dragging');
+            }
+            
+            // Eğer aynı hayvana tekrar tıklanırsa, bırak ve kontrol et
+            if (selectedAnimal === clickedAnimal && isDragging) {
+                dropAnimal(clickedAnimal);
+                return;
+            }
+            
+            // Yeni hayvanı seç ve sürüklemeyi başlat
+            selectedAnimal = clickedAnimal;
+            isDragging = true;
+            selectedAnimal.classList.add('dragging');
+            
+            // Başlangıç pozisyonunu kaydet
+            const rect = selectedAnimal.getBoundingClientRect();
+            initialX = rect.left;
+            initialY = rect.top;
+        }
+
+        function dropAnimal(animal) {
+            isDragging = false;
+            animal.classList.remove('dragging');
+            
+            // Hayvanın pozisyonunu kontrol et
+            const rect = animal.getBoundingClientRect();
+            const rightGround = document.querySelector('.ground-right');
+            const rightRect = rightGround.getBoundingClientRect();
+            
+            // Sağ tarafta mı kontrol et
+            if (rect.left > rightRect.left) {
+                checkAnswer(animal.dataset.name, animal.dataset.size);
+            }
+            
+            selectedAnimal = null;
+        }
+
+        // Fare hareketi ile hayvanı sürükle
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging && selectedAnimal) {
+                const x = e.clientX - 60; // Hayvan genişliğinin yarısı
+                const y = e.clientY - 60; // Hayvan yüksekliğinin yarısı
+                
+                selectedAnimal.style.left = x + 'px';
+                selectedAnimal.style.top = y + 'px';
+            }
+        });
+
+        // Dokümanın herhangi bir yerine tıklanırsa hayvanı bırak
+        document.addEventListener('click', function(e) {
+            if (isDragging && selectedAnimal && !e.target.closest('.animal')) {
+                dropAnimal(selectedAnimal);
+            }
+        });
+
+        // Touch events için destek
+        document.addEventListener('touchmove', function(e) {
+            if (isDragging && selectedAnimal) {
+                const touch = e.touches[0];
+                const x = touch.clientX - 60;
+                const y = touch.clientY - 60;
+                
+                selectedAnimal.style.left = x + 'px';
+                selectedAnimal.style.top = y + 'px';
+            }
+        }, { passive: false });
+
+        // Sağ tarafa tıklama için event listener'ı kaldır
+        function setupRightSideClick() {
+            // Bu fonksiyon artık gerekli değil
+        }
+
+        // startGameFromModal fonksiyonunu güncelle
+        function startGameFromModal() {
+            document.getElementById('start-modal').classList.add('hidden');
+            startGame();
+        }
+
+        function checkAnswer(animalName, animalSize) {
+            const result = document.getElementById('result');
+            const resultText = document.getElementById('result-text');
+            
+            // Hem hayvan adı hem de boyut kontrolü
+            if (animalName === currentTarget.animal.name && animalSize === currentTarget.size) {
+                resultText.textContent = '🎉 Harika! Doğru!';
+                resultText.className = 'correct';
+                speak('./assets/speech/harika-basardin.mp3');
+                
+                // Başarılı olunca counter'ı 1 arttır
+                currentTarget.gameFile.counter++;
+                
+                // Counter'ları localStorage'e kaydet
+                saveCountersToStorage();
+                
+                // CurrentAnimals'ı sessionStorage'e kaydet
+                saveCurrentAnimalsToSession();
+
+				window.parent.postMessage({
+					status: 'success'
+				}, '*');
+
+            } else {
+                resultText.textContent = '😊 Tekrar dene!';
+                resultText.className = 'incorrect';
+                speak('./assets/speech/olmadi-hadi-tekrar-deneyelim.mp3');
+            }
+            
+            result.classList.add('show');
+        }
+
+        function nextRound() {
+            document.getElementById('result').classList.remove('show');
+            setTimeout(startGame, 300);
+        }
+
+        function speakInstruction(targetData) {
+            // targetData.gameFile.speech dosyasını çal
+            speak(targetData.gameFile.speech);
+        }
+
+        function speak(speechFile) {
+            const audio = new Audio(speechFile);
+            audio.play();
+        }
+
+        // Sayfa yüklendiginde verileri yükle
+        function initializeGame() {
+            // Önce localStorage'den counter'ları yükle
+            loadCountersFromStorage();
+            
+            // Sonra sessionStorage'den güncel counter'ları yükle (varsa üzerine yazar)
+            loadCurrentAnimalsFromSession();
+            
+            // Counter durumunu göster
+            console.log('=== Big-Small Counter Durumu ===');
+            animals.forEach(animal => {
+                const bigSmallGame = animal.games.find(game => game.type === 'big-small');
+                if (bigSmallGame && bigSmallGame.files) {
+                    console.log(`${animal.name}:`);
+                    if (bigSmallGame.files.big) {
+                        bigSmallGame.files.big.forEach((f, i) => {
+                            console.log(`  big[${i}]: ${f.counter}`);
+                        });
+                    }
+                    if (bigSmallGame.files.small) {
+                        bigSmallGame.files.small.forEach((f, i) => {
+                            console.log(`  small[${i}]: ${f.counter}`);
+                        });
+                    }
+                }
+            });
+            console.log('================================');
+        }
+
+        // Sayfa yüklendiğinde verileri hazırla
+        initializeGame();
+
+        // Sayfa yüklendiğinde modal gösterilir, oyun başlamaz
+        // Modal kapatıldığında oyun başlar
+
+
+		window.addEventListener('message', function(event) {
+			// Mesajın doğru kaynaktan geldiğini kontrol et
+				//alert('Mesaj alındı: ' + event.data);
+		});
+
+		/**
+		 * big-small oyunu için en az oynanan hayvan ve boyut kombinasyonunu bulur
+		 * @returns {Object} { animal: hayvan objesi, size: 'big' veya 'small', gameFile: seçilen oyun dosyası objesi }
+		 */
+		function selectLeastPlayedBigSmallAnimal() {
+			const allOptions = [];
+			
+			// Tüm hayvanların big-small oyun seçeneklerini topla
+			animals.forEach(animal => {
+				// games array'inden big-small tipini bul
+				const bigSmallGame = animal.games.find(game => game.type === 'big-small');
+				
+				if (bigSmallGame && bigSmallGame.files) {
+					// Big seçeneklerini ekle
+					if (bigSmallGame.files.big && Array.isArray(bigSmallGame.files.big)) {
+						bigSmallGame.files.big.forEach(bigFile => {
+							allOptions.push({
+								animal: animal,
+								size: 'big',
+								gameFile: bigFile,
+								counter: bigFile.counter
+							});
+						});
+					}
+					
+					// Small seçeneklerini ekle
+					if (bigSmallGame.files.small && Array.isArray(bigSmallGame.files.small)) {
+						bigSmallGame.files.small.forEach(smallFile => {
+							allOptions.push({
+								animal: animal,
+								size: 'small',
+								gameFile: smallFile,
+								counter: smallFile.counter
+							});
+						});
+					}
+				}
+			});
+			
+			// En düşük count değerini bul
+			const minCount = Math.min(...allOptions.map(option => option.counter));
+			
+			// En düşük count'a sahip tüm seçenekleri filtrele
+			const leastPlayedOptions = allOptions.filter(option => option.counter === minCount);
+			
+			// Bunlar arasından rastgele seç
+			const selected = leastPlayedOptions[Math.floor(Math.random() * leastPlayedOptions.length)];
+			
+			console.log('Seçilen:', {
+				hayvan: selected.animal.name,
+				boyut: selected.size,
+				counter: selected.counter,
+				dosya: selected.gameFile.file
+			});
+			
+			return selected;
+		}
+
+		/**
+		 * Hedef hayvan + karşıtı + 1 rastgele hayvan seçer
+		 * @returns {Object} { 
+		 *   target: { animal, size, gameFile }, 
+		 *   opposite: { animal, size, gameFile },
+		 *   random: { animal, size, gameFile },
+		 *   allAnimals: [3 hayvan array'i]
+		 * }
+		 */
+		function selectBigSmallGameAnimals() {
+			// 1. En az oynanan hedefi seç
+			const target = selectLeastPlayedBigSmallAnimal();
+			
+			// 2. Karşıt boyutu bul (big -> small, small -> big)
+			const oppositeSize = target.size === 'big' ? 'small' : 'big';
+			
+			// 3. Aynı hayvanın karşıt boyutunu al
+			const bigSmallGame = target.animal.games.find(game => game.type === 'big-small');
+			const oppositeFiles = bigSmallGame.files[oppositeSize];
+			
+			// Karşıt boyuttan rastgele bir dosya seç
+			const oppositeFile = oppositeFiles[Math.floor(Math.random() * oppositeFiles.length)];
+			
+			const opposite = {
+				animal: target.animal,
+				size: oppositeSize,
+				gameFile: oppositeFile
+			};
+			
+			// 4. Rastgele başka bir hayvan seç (hedef hayvan hariç)
+			const otherAnimals = animals.filter(a => a.name !== target.animal.name);
+			const randomAnimal = otherAnimals[Math.floor(Math.random() * otherAnimals.length)];
+			
+			// Rastgele hayvan için big veya small seç
+			const randomSize = Math.random() > 0.5 ? 'big' : 'small';
+			const randomBigSmallGame = randomAnimal.games.find(game => game.type === 'big-small');
+			const randomFiles = randomBigSmallGame.files[randomSize];
+			const randomFile = randomFiles[Math.floor(Math.random() * randomFiles.length)];
+			
+			const random = {
+				animal: randomAnimal,
+				size: randomSize,
+				gameFile: randomFile
+			};
+			
+			// 5. 3 hayvanı karıştır
+			const allAnimals = [target, opposite, random];
+			allAnimals.sort(() => Math.random() - 0.5);
+			
+			console.log('🎯 Hedef:', `${target.size} ${target.animal.name}`);
+			console.log('🔄 Karşıt:', `${opposite.size} ${opposite.animal.name}`);
+			console.log('🎲 Rastgele:', `${random.size} ${random.animal.name}`);
+			
+			return {
+				target: target,
+				opposite: opposite,
+				random: random,
+				allAnimals: allAnimals
+			};
+		}
+    </script>
+</body>
+</html>

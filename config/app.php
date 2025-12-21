@@ -1,7 +1,8 @@
 <?php
 return [
-    'black_list_channel_ids' =>  array_values(explode(',', env('BLACK_LIST_CHANNEL_IDS', ''))),
+    'black_list_channel_ids' =>  array_values(explode(',', env('BLACK_LIST_CHANNEL_IDS', ''))) ?? [],
 	'when_upload_video_add_queue_for_streaming' => env('WHEN_UPLOAD_VIDEO_ADD_QUEUE_FOR_STREAMING', false),
+	'daily_video_watch_limit' => env('DAILY_VIDEO_WATCH_LIMIT', 3),
     /*
     |--------------------------------------------------------------------------
     | Application Name

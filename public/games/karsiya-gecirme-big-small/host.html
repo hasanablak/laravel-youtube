@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<style>
+		/* Simple page styles */
+		* {
+		box-sizing: border-box;
+		font-family: sans-serif;
+		padding: 0;
+		margin: 0;
+		}
+
+		.sample {
+		padding: 2rem;
+		text-align: center;
+		}
+
+		p {
+		line-height: 1.6;
+		margin-top: 1rem;
+		}
+
+		a {
+		color: #000;
+		display: block;
+		font-weight: 600;
+		margin-top: 2rem;
+		text-decoration: none;
+		text-transform: uppercase;
+		}
+
+		button {
+		background: transparent;
+		border: 0;
+		color: #666;
+		cursor: pointer;
+		display: inline-block;
+		font-size: 1rem;
+		font-weight: bold;
+		padding: 0 1rem;
+		text-transform: uppercase;
+
+		&:hover {
+		color: #111;
+		}
+
+		&.open-modal {
+		background: #000;
+		border-radius: 5px;
+		color: #fff;
+		display: inline-block;
+		margin: 1rem 0.5rem;
+		padding: 1rem;
+		}
+		}
+
+		/* Modal styles */
+		.modal {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+		padding: 2rem;
+		position: fixed;
+		top: 0;
+		width: 100%;
+		visibility: hidden;
+		opacity: 0;
+		transition: all 0.3s ease;
+
+		.modal-backdrop {
+		background: rgba(#000, 0.7);
+		height: 100%;
+		width: 100%;
+		position: fixed;
+		}
+
+		.modal-content {
+		background: #fff;
+		border-radius: 5px;
+		max-width: 1200px;
+		position: fixed;
+		top: -100%;
+		transition: all 0.6s ease;
+		z-index: 1000;
+		}
+
+		.modal-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid #ccc;
+		padding: 1.5rem;
+
+		.close-modal {
+		font-size: 2rem;
+		padding: 0;
+		margin: 0;
+		height: 30px;
+		width: 30px;
+		text-align: center;
+
+		&:hover {
+		color: #000;
+		}
+		}
+		}
+
+		.modal-body {
+		padding: 1.5rem;
+		}
+
+		.modal-footer {
+		border-top: 1px solid #ccc;
+		padding: 1rem;
+		text-align: right;
+		}
+
+		&.visible {
+		opacity: 1;
+		visibility: visible;
+
+		.modal-content {
+		top: 25%;
+		}
+		}
+		}
+
+	</style>
+</head>
+<body>
+	<div class="sample">
+		<h1>Vanilla Javascript Modal</h1>
+		<p>Very simple modal with a few lines of JS.</p>
+
+		<button class="open-modal">Open modal</button>
+		<button class="open-modal">Open modal</button>
+
+		<p>(with multiple click triggers)</p>
+
+		<a href="https://dantewebmaster.github.io/" target="_blank">&lt;dw /&gt;</a>
+	</div>
+
+	<div class="modal">
+		<span class="modal-backdrop close-modal"></span>
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2 class="modal-title">Modal Title</h2><button class="close-modal">&times</button>
+			</div>
+			<div class="modal-body">
+				<iframe width="1200px" height="600px" id="iframe" src="./index.html" frameborder="0"></iframe>
+			</div>
+			<div class="modal-footer">
+				<button class="close-modal">Ok</button>
+				<button class="close-modal">Cancel</button>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		const openModalButtons = document.querySelectorAll('.open-modal'),
+		modal = document.querySelector('.modal'),
+		closeModalButtons = document.querySelectorAll('.close-modal');
+
+		openModalButtons.forEach(openBtn => {
+		openBtn.addEventListener('click', openModal)
+		});
+
+		closeModalButtons.forEach(closeBtn => {
+		closeBtn.addEventListener('click', closeModal)
+		});
+
+		function openModal() {
+			modal.classList.add('visible');
+			const iframe = document.getElementById('iframe');
+			iframe.contentWindow.postMessage('Mesajınız');
+		}
+
+		function closeModal() {
+			modal.classList.remove('visible');
+		}
+
+		window.addEventListener('message', function(event) {
+			// Mesajın doğru kaynaktan geldiğini kontrol et
+			if(event.data.status === 'success') {
+				closeModal();
+			}
+		});
+
+
+	</script>
+</body>
+</html>

@@ -212,13 +212,13 @@
 @if(false) lg:pl-[320px] @endif">
     <div class="flex items-center justify-between h-16 px-4">
         <!-- Sol Bölüm - Mobil Menü -->
-        <div class="lg:hidden flex items-center">
+        <div class="flex items-center">
             <button id="mobile-menu-button" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg" aria-label="Toggle mobile menu">
                 <i class="fas fa-bars text-xl"></i>
             </button>
             <a href="{{ route('home') }}" class="flex items-center space-x-2 ml-2">
                 <i class="fas fa-tv text-slate-800 dark:text-white text-2xl"></i>
-                <span class="font-bold text-lg text-slate-800 dark:text-white">Stream</span>
+                <span class="font-bold text-lg text-slate-800 dark:text-white">{{config('app.name')}}</span>
             </a>
         </div>
 
