@@ -18,13 +18,20 @@
     <div class="limit-card">
         <div class="video-section">
             <div class="video-wrapper">
-                <video autoplay playsinline class="limit-video">
-                    <source src="{{ asset('assets/videos/bye-bye/video-1.mp4') }}" type="video/mp4">
+				@php
+					$rand = rand(0, 2);
+				@endphp
+                <video autoplay muted loop playsinline class="limit-video">
+                    <source src="{{ asset('assets/videos/bye-bye-' . $rand . '/video-1.mp4') }}" type="video/mp4">
                 </video>
+				
                 <div class="video-overlay">
                     <div class="overlay-text">👋 Ekranı Kapat</div>
                     <div class="overlay-subtext">Oyuncaklarla Oynama Zamanı!</div>
                 </div>
+				<audio autoplay>
+					<source src="{{ asset('assets/speech/hafsacim-bugunki-cizgifilm-saatimiz-bitti.mp3') }}" type="audio/mpeg">
+				</audio>
             </div>
         </div>
 

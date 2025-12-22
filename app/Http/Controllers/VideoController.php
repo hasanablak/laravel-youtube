@@ -111,14 +111,7 @@ class VideoController extends Controller
 			'views' => $video->views + 1,
 		]);
 
-        // İzleme geçmişi kaydı ekle (auth varsa)
-        if (Auth::check()) {
-            WatchHistory::create([
-                'user_id' => Auth::id(),
-                'video_id' => $video->id,
-                'watched_at' => now(),
-            ]);
-        }
+        
 
         $videos = Video::orderBy('views', 'asc')
         ->inRandomOrder()
@@ -306,4 +299,44 @@ class VideoController extends Controller
             'dislikes'=>count($video->dislikes) ?? 0,
         ]);
     }
+
+	public function onVideoEnd($videoId)
+	{
+
+		if (Auth::check()) {
+			WatchHistory::create([
+				'user_id' => Auth::id(),
+				'video_id' => $videoId,
+				'watched_at' => now(),
+			]);
+		}
+
+		//check if user has exceeded daily limit
+
+
+
+		return response()->json([
+			'success' => true,
+			'message' => 'Video bitiş işlemi kaydedildi.'
+		]);
+	}
+
+	public function checkDailyWatchLimit()
+	{
+		if (Auth::check()) {
+			$daily_watch_count = WatchHistory::where('user_id', Auth::id())
+				->whereDate('watched_at', now()->toDateString())
+				->count();
+
+			return response()->json([
+				'daily_watch_count' => $daily_watch_count,
+				'limit_exceeded' => $daily_watch_count >= config('app.daily_video_watch_limit'),
+			]);
+		}
+
+		return response()->json([
+			'daily_watch_count' => 0,
+			'limit_exceeded' => false,
+		]);
+	}
 }

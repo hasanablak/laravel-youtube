@@ -10,6 +10,7 @@
                 {{-- Video Player --}}
                 <div class="bg-black rounded-xl overflow-hidden shadow-md">
                     <video
+						id="video"
                         controls
                         {{-- autoplay --}}
                         class="w-full aspect-video"
@@ -310,6 +311,25 @@
                     }).catch(()=>{});
 
                     this.fetchComments(videoId);
+					
+					// Video bitme eventi
+					const videoElement = document.getElementById('video');
+					if (videoElement) {
+						videoElement.addEventListener('ended', async () => {
+							await this.onVideoEnded();
+							const limitExceeded = await this.checkDailyWatchLimit();
+							if (limitExceeded) {
+								window.location.href = '/errors/video-watch-limit-reached';
+							}
+						});
+
+						videoElement.addEventListener('play', async () => {
+							const limitExceeded = await this.checkDailyWatchLimit();
+							if (limitExceeded) {
+								window.location.href = '/errors/video-watch-limit-reached';
+							}
+						});
+					}
                 },
 				created(){
 					const self = this;
@@ -322,6 +342,23 @@
 					}, 1000);
 				},
                 methods: {
+					
+					async onVideoEnded() {
+						const videoId = {{ $video->id }};
+						const result = await axios.post(`/api/videos/${videoId}/end`);
+						return result.data;
+					},
+
+					async checkDailyWatchLimit() {
+						try {
+							const response = await axios.get('/api/check-daily-watch-limit');
+							return response.data.limit_exceeded;
+						} catch (error) {
+							console.error('Günlük izleme limiti kontrol hatası:', error);
+							return true; // Hata durumunda izleme izni ver
+						}
+					},
+					
                     async toggleSubscribe(channelId) {
                         try {
                             const response = await axios.post(`/api/channels/${channelId}`);
