@@ -20,7 +20,7 @@ class HomeController extends Controller
             ->with(['videos' => function($query) {
                 $query->where('visibility', 'public')
                       ->whereNotNull('thumbnail_image')
-                      ->orderBy('created_at', 'desc')
+                      ->inRandomOrder()
                       ->limit(1);
             }])
             ->inRandomOrder()
