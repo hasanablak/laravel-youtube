@@ -1,15 +1,24 @@
 <div
-
+	data-element="video-card"
 	@if($video->watched_by_auth_user)
 			 style="opacity:0.5"
 	@endif
-@mouseenter='speechText(@json($video->title))' class="group bg-pink-50 border border-pink-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow transform hover:-translate-y-1">
+	@mouseenter='speechText(@json($video->title))' 
+	class="group bg-pink-50 border border-pink-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow transform hover:-translate-y-1">
 	{{-- Thumbnail --}}
 	<div class="relative aspect-video overflow-hidden">
 		<a href="{{ route('video.watch', $video->uid) }}" class="block w-full h-full">
 			<img src="{{ Storage::url('videos/' . $video->uid . '/' . $video->thumbnail_image) }}"
 					alt="{{ $video->title }}"
 					class="w-full h-full object-cover transform group-hover:scale-105 transition duration-300">
+			<video class="absolute top-0 left-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+				   muted
+				   autoplay
+				   loop
+				   playsinline>
+				   <source src="{{ $video->video_url }}"
+                                type="video/mp4">
+			</video>
 			<div class="absolute bottom-2 right-2 bg-pink-600 text-white text-xs px-2 py-1 rounded-lg">
 				{{ $video->duration ?? '0:00' }}
 			</div>

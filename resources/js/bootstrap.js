@@ -51,6 +51,22 @@ window.app.mixin({
 		speechText(text) {
 			//window.TextToSpeech(text);
 		}
+	},
+	mounted() {
+		document.querySelectorAll('[data-element="video-card"]').forEach(el => {
+			el.addEventListener('mouseenter', () => {
+				el.querySelector('img').classList.add('hidden');
+				el.querySelector('video').classList.remove('hidden');
+				el.querySelector('video').play()
+			});
+
+			el.addEventListener('mouseleave', () => {
+
+				el.querySelector('img').classList.remove('hidden');
+				el.querySelector('video').classList.add('hidden');
+				el.querySelector('video').pause()
+			});
+		});
 	}
 })
 
