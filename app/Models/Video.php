@@ -70,4 +70,9 @@ class Video extends Model
 
         return $d->toFormattedDateString();
     }
+
+    public function watchHistories()
+    {
+        return $this->hasMany(WatchHistory::class);
+    }
 }

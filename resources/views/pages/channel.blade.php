@@ -6,7 +6,7 @@
     <script>
         function showTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
+                content.style.display = 'none';<
             });
 
             document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -61,7 +61,10 @@
                         <div class="flex items-center gap-4 text-gray-600 text-sm">
                             <span>{{ '@' . $channel->slug }}</span>
                             <span>{{ number_format(rand(10000, 1000000)) }} abone</span>
-                            <span>{{ number_format(rand(50, 500)) }} video</span>
+                            <span>{{ $totalVideoCount }} video</span>
+                            
+                            <span >Toplam görüntülenme</span>
+                            <span >{{ $totalWatchCount }} kez</span>
                         </div>
                     </div>
                 </div>
@@ -112,7 +115,7 @@
                                 </div>
                                 <div>
                                     <p class="text-gray-600">Toplam görüntülenme</p>
-                                    <p class="text-black font-medium">{{ $views }}</p>
+                                    <p class="text-black font-medium">{{ $totalWatchCount }}</p>
                                 </div>
 <!--                                <div>
                                     <p class="text-gray-600">Konum</p>

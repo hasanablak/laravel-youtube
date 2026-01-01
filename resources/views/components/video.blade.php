@@ -1,4 +1,9 @@
-<div @mouseenter='speechText(@json($video->title))' class="group bg-pink-50 border border-pink-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow transform hover:-translate-y-1">
+<div
+
+	@if($video->watched_by_auth_user)
+			 style="opacity:0.5"
+	@endif
+@mouseenter='speechText(@json($video->title))' class="group bg-pink-50 border border-pink-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow transform hover:-translate-y-1">
 	{{-- Thumbnail --}}
 	<div class="relative aspect-video overflow-hidden">
 		<a href="{{ route('video.watch', $video->uid) }}" class="block w-full h-full">
@@ -22,6 +27,7 @@
 
 		{{-- Başlık ve Detaylar --}}
 		<div class="flex-1 min-w-0">
+		
 			<a href="{{ route('video.watch', $video->uid) }}"
 				class="block font-semibold text-pink-700 text-sm line-clamp-2 mb-1 hover:text-pink-600">
 				{{ $video->title }}

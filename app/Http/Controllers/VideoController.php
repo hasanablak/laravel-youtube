@@ -89,10 +89,27 @@ class VideoController extends Controller
         ]);
     }
 
-    public function videos($channel)
+    public function channel($channel)
     {
-        $channel = Channel::with('videos')->where('slug',$channel)->first();
-        return view('pages.channel',['channel'=>$channel, 'views'=>count($channel->videos)]);
+        $channel = Channel::with([
+                'videos' => function ($q) {
+                    $q->withExists([
+                        'watchHistories as watched_by_auth_user' => function ($q) {
+                            $q->where('user_id', auth()->id());
+                        }
+                    ]);
+                }
+            ])->where('slug', $channel)
+            ->first();
+
+        
+        return view('pages.channel',[
+            'channel'=>$channel, 
+            'totalVideoCount'=>count($channel->videos),
+            'totalWatchCount'=> $channel->videos->sum(function($video){
+                return $video->watchHistories()->count();
+            }),
+        ]);
     }
 
     public function video($video)

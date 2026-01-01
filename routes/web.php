@@ -18,7 +18,7 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.su
 Route::get('/login', [AuthController::class, 'loginPage'])->name('login.page');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 
-Route::get('/channels/{channel}', [VideoController::class,'videos'])->name('channel');
+Route::get('/channels/{channel}', [VideoController::class,'channel'])->name('channel');
 Route::get('/watch/{video}', [VideoController::class,'video'])->name('video.watch');
 
 Route::get('/api/count/{video_id}',[VideoController::class, 'countLikeDislike'])

@@ -38,10 +38,22 @@ class CreateThumbnailFromVideo implements ShouldQueue
     public function handle()
     {
         $destination = '/' . $this->video->uid . '/' . $this->video->uid . '.png';
-       
-        FFMpeg::fromDisk($this->disk)
-            ->open($this->video_path)
-            ->getFrameFromSeconds(rand(60, 500))
+
+        $media = FFMpeg::fromDisk($this->disk)
+            ->open($this->video_path);
+
+        // Videonun süresi (saniye)
+        $duration = (int) $media->getDurationInSeconds();
+
+        // Güvenlik: çok kısa videolar
+        $minSecond = 1;
+        $maxSecond = max($minSecond, $duration - 1);
+
+        // Rastgele saniye
+        $randomSecond = rand($minSecond, $maxSecond);
+
+        $media
+            ->getFrameFromSeconds($randomSecond)
             ->export()
             ->toDisk('videos')
             ->save($destination);
@@ -50,4 +62,5 @@ class CreateThumbnailFromVideo implements ShouldQueue
             'thumbnail_image' => $this->video->uid . '.png'
         ]);
     }
+
 }

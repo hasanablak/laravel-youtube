@@ -17,7 +17,7 @@ class ManuelVideoUpdater extends Command
      *
      * @var string
      */
-    protected $signature = 'manuel:video-updater';
+	protected $signature = 'manuel:video-updater {folder? : İşlenecek klasör adı}';
 
     /**
      * The console command description.
@@ -32,9 +32,22 @@ class ManuelVideoUpdater extends Command
     public function handle()
     {
         $this->info('Video güncelleme işlemi başlatılıyor...');
-
+		$folderParam = $this->argument('folder');
         $disk = Storage::disk('manuel-videos');
-        $files = $disk->allFiles();
+        if ($folderParam) {
+			// SADECE BELİRTİLEN KLASÖR
+			if (!$disk->exists($folderParam)) {
+				$this->error("❌ '{$folderParam}' klasörü bulunamadı.");
+				return Command::FAILURE;
+			}
+
+			$files = $disk->allFiles($folderParam);
+			$this->info("Sadece '{$folderParam}' klasörü işleniyor.");
+		} else {
+			// TÜM KLASÖRLER
+			$files = $disk->allFiles();
+			$this->info('Tüm klasörler işleniyor.');
+		}
 		$totalFileCount = count($files);
         $this->info('Toplam ' . $totalFileCount . ' dosya bulundu.');
 
@@ -49,11 +62,13 @@ class ManuelVideoUpdater extends Command
             // Channel'ı bul veya oluştur
 			$channel = Channel::where('name', $folderName)->first();
 			if (!$channel) {
+
 				$user = User::create([
 					'name' => $folderName,
 					'email' => Str::slug($folderName) . '@example.com',
 					'password' => bcrypt('password'), // Güvenlik için gerçek bir parola kullanın
 				]);
+
                 $channel = Channel::create([
                         'user_id' => $user->id,
 						'uid' => Str::uuid(),
@@ -62,10 +77,10 @@ class ManuelVideoUpdater extends Command
                         'description' => 'Otomatik oluşturuldu: ' . $folderName,
                         // Diğer gerekli alanları buraya ekleyin
                     ]);
-				$this->info('  ✓ Yeni channel oluşturuldu: ' . $folderName);
+				$this->info('Yeni channel oluşturuldu: ' . $folderName);
 
 			} else {
-				$this->info('  ✓ Mevcut channel bulundu: ' . $folderName);
+				$this->info('Mevcut channel bulundu: ' . $folderName);
 			}
 
             // Bu klasördeki her dosya için işlem yap
@@ -89,10 +104,10 @@ class ManuelVideoUpdater extends Command
 				// Hash'e göre kontrol et
 				$existingVideo = Video::where('file_hash', $fileHash)->first();
 				if ($existingVideo) {
-					$this->info('👍 Video zaten var (hash eşleşti), es geçiliyor...');
+					$this->info('Video zaten var (hash eşleşti), es geçiliyor...');
 					continue;
 				}else{
-					$this->info('✨ Yeni video, veritabanına ekleniyor...');
+					$this->info('Yeni video, veritabanına ekleniyor...');
 				}
 
 				// Dosyayı al veya path'i kullan
@@ -126,7 +141,6 @@ class ManuelVideoUpdater extends Command
 
 				app(VideoService::class)->generateThumbnail($video, 'manuel-videos');
 				$this->info('✅ Video başarıyla eklendi');
-
 			}
         }
 
