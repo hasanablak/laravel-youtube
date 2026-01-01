@@ -322,9 +322,12 @@ class VideoController extends Controller
 
 		if (Auth::check()) {
 			// Aynı saat içinde aynı video için kayıt var mı kontrol et
+			$hourStart = now()->startOfHour();
+			$hourEnd = now()->endOfHour();
+			
 			$existingWatch = WatchHistory::where('user_id', Auth::id())
 				->where('video_id', $videoId)
-				->whereRaw('DATE_FORMAT(watched_at, "%Y-%m-%d %H") = ?', [now()->format('Y-m-d H')])
+				->whereBetween('watched_at', [$hourStart, $hourEnd])
 				->first();
 
 			// Eğer kayıt yoksa oluştur
