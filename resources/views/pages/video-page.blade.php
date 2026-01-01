@@ -287,6 +287,7 @@
                         commentCount: 0,
                         loadingComments: false,
                         posting: false,
+                        fiveMinuteTimer: null,
                     }
                 },
                 mounted() {
@@ -315,18 +316,35 @@
 					// Video bitme eventi
 					const videoElement = document.getElementById('video');
 					if (videoElement) {
-						videoElement.addEventListener('ended', async () => {
-							await this.onVideoEnded();
-							const limitExceeded = await this.checkDailyWatchLimit();
-							if (limitExceeded) {
-								window.location.href = '/errors/video-watch-limit-reached';
-							}
-						});
+						// videoElement.addEventListener('ended', async () => {
+						// 	await this.onVideoEnded();
+						// 	const limitExceeded = await this.checkDailyWatchLimit();
+						// 	if (limitExceeded) {
+						// 		window.location.href = '/errors/video-watch-limit-reached';
+						// 	}
+						// });
 
 						videoElement.addEventListener('play', async () => {
 							const limitExceeded = await this.checkDailyWatchLimit();
 							if (limitExceeded) {
 								window.location.href = '/errors/video-watch-limit-reached';
+							}
+							
+							// Video başladığında 5 dakika sonra modal açmak için timer başlat
+							if (this.fiveMinuteTimer) {
+								clearTimeout(this.fiveMinuteTimer);
+							}
+							this.fiveMinuteTimer = setTimeout(() => {
+								this.openModalAfterFiveMinutes();
+								this.onVideoEnded();
+							}, 5 * 1000); // 5 dakika = 300.000 ms
+						});
+						
+						videoElement.addEventListener('pause', () => {
+							// Video duraklatıldığında timer'ı iptal et
+							if (this.fiveMinuteTimer) {
+								clearTimeout(this.fiveMinuteTimer);
+								this.fiveMinuteTimer = null;
 							}
 						});
 					}
@@ -335,13 +353,32 @@
 					const self = this;
 					setTimeout(() => {
 						window.addEventListener('message', function(event) {
+							// ikinci settimeout, cevap geldikten birsüre sonra modal'ı kapat ve videoyu oynat, çünkü modal'da "HARİKA BAŞARDIN!" sesi var.
 							setTimeout(() => {
 								self.showModal = false;
+								// Modal kapandıktan sonra videoyu kaldığı yerden başlat
+								const videoElement = document.getElementById('video');
+								if (videoElement && videoElement.paused) {
+									if (videoElement.requestFullscreen) videoElement.requestFullscreen();
+									videoElement.play();
+								}
 							}, 1800);
 						});
 					}, 1000);
 				},
                 methods: {
+					
+					openModalAfterFiveMinutes() {
+						// Videoyu duraklat
+						const videoElement = document.getElementById('video');
+						if (videoElement && !videoElement.paused) {
+							videoElement.pause();
+							document.exitFullscreen();
+						}
+						
+						// Modal'ı aç
+						this.showModal = true;
+					},
 					
 					async onVideoEnded() {
 						const videoId = {{ $video->id }};

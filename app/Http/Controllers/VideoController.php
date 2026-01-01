@@ -321,11 +321,20 @@ class VideoController extends Controller
 	{
 
 		if (Auth::check()) {
-			WatchHistory::create([
-				'user_id' => Auth::id(),
-				'video_id' => $videoId,
-				'watched_at' => now(),
-			]);
+			// Aynı saat içinde aynı video için kayıt var mı kontrol et
+			$existingWatch = WatchHistory::where('user_id', Auth::id())
+				->where('video_id', $videoId)
+				->whereRaw('DATE_FORMAT(watched_at, "%Y-%m-%d %H") = ?', [now()->format('Y-m-d H')])
+				->first();
+
+			// Eğer kayıt yoksa oluştur
+			if (!$existingWatch) {
+				WatchHistory::create([
+					'user_id' => Auth::id(),
+					'video_id' => $videoId,
+					'watched_at' => now(),
+				]);
+			}
 		}
 
 		//check if user has exceeded daily limit
@@ -347,7 +356,7 @@ class VideoController extends Controller
 
 			return response()->json([
 				'daily_watch_count' => $daily_watch_count,
-				'limit_exceeded' => $daily_watch_count >= config('app.daily_video_watch_limit'),
+				'limit_exceeded' => $daily_watch_count > config('app.daily_video_watch_limit'),
 			]);
 		}
 
