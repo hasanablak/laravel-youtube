@@ -54,18 +54,16 @@ window.app.mixin({
 	},
 	mounted() {
 		document.querySelectorAll('[data-element="video-card"]').forEach(el => {
-			el.addEventListener('mouseenter', () => {
-				el.querySelector('img').classList.add('hidden');
-				el.querySelector('video').classList.remove('hidden');
-				el.querySelector('video').play()
-			});
+			// el.addEventListener('mouseenter', () => {
+			// 	el.querySelector('data-thumbnail-type="image"').classList.add('hidden');
+			// 	el.querySelector('data-thumbnail-type="gif"').classList.remove('hidden');
+			
+			// });
 
-			el.addEventListener('mouseleave', () => {
-
-				el.querySelector('img').classList.remove('hidden');
-				el.querySelector('video').classList.add('hidden');
-				el.querySelector('video').pause()
-			});
+			// el.addEventListener('mouseleave', () => {
+			// 	el.querySelector('data-thumbnail-type="image"').classList.remove('hidden');
+			// 	el.querySelector('data-thumbnail-type="gif"').classList.add('hidden');
+			// });
 		});
 	}
 })

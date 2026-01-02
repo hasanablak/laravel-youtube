@@ -13,7 +13,7 @@ class Video extends Model
 
     protected $guarded = [];
 
-	protected $appends = ['video_url','thumbnail_url'];
+	protected $appends = ['video_url','thumbnail_url', 'thumbnail_gif_url'];
 
 
 	public function getVideoUrlAttribute()
@@ -42,6 +42,10 @@ class Video extends Model
         } else {
             return '/videos/' . 'default.png';
         }
+    }
+
+    public function getThumbnailGifUrlAttribute(){
+        return Storage::disk('videos')->url($this->uid . '/' . $this->thumbnail_gif);
     }
 
     public function likes()

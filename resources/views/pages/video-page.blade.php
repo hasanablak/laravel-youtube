@@ -337,7 +337,7 @@
 							this.fiveMinuteTimer = setTimeout(() => {
 								this.openModalAfterFiveMinutes();
 								this.onVideoEnded();
-							}, 5 * 1000); // 5 dakika = 300.000 ms
+							}, 60 * 5 * 1000); // 5 dakika = 300.000 ms
 						});
 						
 						videoElement.addEventListener('pause', () => {
