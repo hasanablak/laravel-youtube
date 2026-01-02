@@ -4,6 +4,7 @@
 
 use App\Jobs\ConvertVideoForStreaming;
 use App\Jobs\CreateThumbnailFromVideo;
+use App\Jobs\CreateGifFromVideo;
 use App\Models\Channel;
 use App\Models\Video;
 use Illuminate\Support\Facades\Storage;
@@ -76,5 +77,9 @@ use Illuminate\Support\Str;
 
 		public function generateThumbnail(Video $video, $disk = 'videos-temp', $video_path = null){
 			CreateThumbnailFromVideo::dispatch($video, $disk, $video_path);
+		}
+
+		public function generateGif(Video $video, $disk = 'videos-temp', $video_path = null){
+			CreateGifFromVideo::dispatch($video, $disk, $video_path);
 		}
 	}

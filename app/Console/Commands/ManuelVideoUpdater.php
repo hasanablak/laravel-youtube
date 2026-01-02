@@ -140,6 +140,7 @@ class ManuelVideoUpdater extends Command
 				);
 
 				app(VideoService::class)->generateThumbnail($video, 'manuel-videos');
+				app(VideoService::class)->generateGif($video, 'manuel-videos');
 				$this->info('✅ Video başarıyla eklendi');
 			}
         }
