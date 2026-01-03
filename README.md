@@ -10,3 +10,16 @@ cmd ile yaz: yt-dlp.exe -f "best[ext=mp4][height<=720]" --download-archive archi
 
 
 daha sonra cmd ile php artisan manuel:video-update "Transformers" ile de indirilen klasör'ü laravel'e tanıtıyoruz.
+
+
+php artisan manuel:video-update
+
+# Tüm klasörler için
+
+php artisan manuel:thumbnail-regenerate
+php artisan manuel:gif-regenerate
+
+# Sadece belirli bir klasör için
+
+php artisan manuel:thumbnail-regenerate "klasor-adi"
+php artisan manuel:gif-regenerate "klasor-adi"

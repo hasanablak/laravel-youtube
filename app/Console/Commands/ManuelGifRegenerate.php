@@ -73,7 +73,7 @@ class ManuelGifRegenerate extends Command
                     continue;
                 }
 
-                $this->line(($index + 1) . '/' . $totalFileCount . '  - Video işleniyor: ' . basename($file));
+                $this->line(($processedCount + 1) . '/' . $totalFileCount . '  - Video işleniyor: ' . basename($file));
 
                 // Dosya hash'ini hesapla
                 $fullPath = Storage::disk('manuel-videos')->path($file);
