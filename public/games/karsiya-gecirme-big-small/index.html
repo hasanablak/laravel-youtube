@@ -1265,7 +1265,68 @@
 						}
 					}
 				]
-			}
+			},
+
+            {
+                name: 'chameleon',
+                turkish: 'Bukalemun',
+                images: ['./assets/images/chameleon.png'],
+                games: [
+					{
+                        type: 'basic',
+                        files: [
+                            './assets/speech/chameleon.mp3',
+                            './assets/speech/chameleon-2.mp3'
+                        ]
+                    },
+                    {
+                        type: 'big-small',
+                        files: {
+                            big: [
+								{
+									imageProperty: 'width: 150px; height: 150px;',
+									image: './assets/games/big-small/chameleon/chameleon.png',
+									text: `big chameleon'un karşıya geçmesi lazım, big chameleon'u karşıya geçirir misin? big chameleon!`,
+									speech: './assets/games/big-small/chameleon/big-chameleon-en.mp3',
+									counter: 1
+								}
+							],
+                            small: [
+								{
+									imageProperty: 'width: 90px; height: 90px;',
+									image: './assets/games/big-small/chameleon/chameleon.png',
+									text: `small chameleon'un karşıya geçmesi lazım, small chameleon'u karşıya geçirir misin? small chameleon!`,
+									speech: './assets/games/big-small/chameleon/small-chameleon-en.mp3',
+									counter: 1
+								}
+							],
+                        }
+                    },
+                    {
+                        type: 'colors',
+                        files: {
+                            red: './assets/speech/chameleon-red.mp3',
+                            blue: './assets/speech/chameleon-blue.mp3',
+                            green: './assets/speech/chameleon-green.mp3'
+                        }
+                    },
+                    {
+                        type: 'big-small-colors',
+                        files: {
+                            big: {
+                                red: './assets/speech/chameleon-big-red.mp3',
+                                blue: './assets/speech/chameleon-big-blue.mp3',
+                                green: './assets/speech/chameleon-big-green.mp3'
+                            },
+                            small: {
+                                red: './assets/speech/crocodile-small-red.mp3',
+                                blue: './assets/speech/crocodile-small-blue.mp3',
+                                green: './assets/speech/crocodile-small-green.mp3'
+                            }
+                        }
+                    }
+                ]
+            },
         ];
 
         let currentTarget = null;
