@@ -7,7 +7,7 @@
 	class="group bg-pink-50 border border-pink-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow transform hover:-translate-y-1">
 	{{-- Thumbnail --}}
 	<div class="relative aspect-video overflow-hidden">
-		<a href="{{ route('video.watch', $video->uid) }}" class="block w-full h-full">
+		<a href="{{ route('videos.show', $video->uid) }}" class="block w-full h-full">
 			<img data-thumbnail-type="image" src="{{ Storage::url('videos/' . $video->uid . '/' . $video->thumbnail_image) }}"
 					alt="{{ $video->title }}"
 					class="w-full h-full object-cover transform group-hover:scale-105 transition duration-300">
@@ -34,7 +34,7 @@
 		{{-- Başlık ve Detaylar --}}
 		<div class="flex-1 min-w-0">
 		
-			<a href="{{ route('video.watch', $video->uid) }}"
+			<a href="{{ route('videos.show', $video->uid) }}"
 				class="block font-semibold text-pink-700 text-sm line-clamp-2 mb-1 hover:text-pink-600">
 				{{ $video->title }}
 			</a>

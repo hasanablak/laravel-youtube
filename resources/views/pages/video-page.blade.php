@@ -1,8 +1,10 @@
-@extends('layouts.app', ['title' => $video->title . ' | Stream'])
+@extends('layouts.app', [
+		'title' => $currentVideo->title
+	])
 
 @section('content')
     <div id="app" class="max-w-7xl mx-auto px-4 py-6 bg-gray-50 min-h-screen">
-        <div class="flex flex-col lg:flex-row gap-8" data-channel-id="{{ $video->channel->id }}">
+        <div class="flex flex-col lg:flex-row gap-8" data-channel-id="{{ $currentVideo->channel->id }}">
 
             {{-- SOL BÖLÜM --}}
             <div class="flex-1 space-y-6">
@@ -14,31 +16,31 @@
                         controls
                         {{-- autoplay --}}
                         class="w-full aspect-video"
-                        poster="{{ $video->thumbnail }}"
+                        poster="{{ $currentVideo->thumbnail }}"
                     >
-                        <source src="{{ $video->video_url }}"
+                        <source src="{{ $currentVideo->video_url }}"
                                 type="video/mp4">
                         Tarayıcınız video etiketini desteklemiyor.
                     </video>
                 </div>
 
                 {{-- Başlık --}}
-                <h1 class="text-2xl font-semibold text-gray-900">{{ $video->title }}</h1>
+                <h1 class="text-2xl font-semibold text-gray-900">{{ $currentVideo->title }}</h1>
 
                 {{-- Kanal Bilgileri + Etkileşim --}}
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-gray-200">
 
                     {{-- Kanal Bilgileri --}}
                     <div class="flex items-center gap-4">
-                        <a href="{{ route('channel', $video->channel->slug) }}" class="flex items-center gap-3 group">
+                        <a href="{{ route('channel', $currentVideo->channel->slug) }}" class="flex items-center gap-3 group">
                             <img
-                                src="{{ $video->channel->image ? asset($video->channel->image) : asset('images/default-avatar.png') }}"
+                                src="{{ $currentVideo->channel->image ? asset($currentVideo->channel->image) : asset('images/default-avatar.png') }}"
                                 class="w-12 h-12 rounded-full object-cover ring-2 ring-transparent group-hover:ring-red-500 transition"
                             >
                             <div>
                                 <div class="flex items-center gap-1 font-semibold text-gray-900">
-                                    {{ $video->channel->name }}
-                                    @if($video->channel->verified)
+                                    {{ $currentVideo->channel->name }}
+                                    @if($currentVideo->channel->verified)
                                         <i class="fas fa-check-circle text-blue-500 text-sm"></i>
                                     @endif
                                 </div>
@@ -56,7 +58,7 @@
                                         : 'bg-red-600 text-white border-transparent hover:bg-red-700',
                                     animating ? 'scale-105' : ''
                                 ]"
-                                @click="toggleSubscribe({{ $video->channel->id }})"
+                                @click="toggleSubscribe({{ $currentVideo->channel->id }})"
                             >
                                 <span v-if="!isSubscribed" class="flex items-center gap-2">
                                     <i class="fas fa-bell"></i>
@@ -75,7 +77,7 @@
                     {{-- 🎬 Etkileşim Butonları --}}
                     <div class="flex items-center gap-4">
                         <button
-                            @click="toggleLike({{ $video->id }})"
+                            @click="toggleLike({{ $currentVideo->id }})"
                             :class="[
         'flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition-all duration-200',
         liked ? 'text-blue-600 scale-110' : 'text-gray-700',
@@ -87,7 +89,7 @@
                         </button>
 
                         <button
-                            @click="toggleDislike({{ $video->id }})"
+                            @click="toggleDislike({{ $currentVideo->id }})"
                             :class="[
         'flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition-all duration-200',
         disliked ? 'text-red-600 scale-110' : 'text-gray-700',
@@ -107,11 +109,11 @@
                 {{-- Video Bilgisi --}}
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                     <div class="text-sm text-gray-600 mb-2 flex items-center gap-2">
-                        <span>{{ number_format($video->views) }} görüntüleme</span>
+                        <span>{{ number_format($currentVideo->views) }} görüntüleme</span>
                         <span>•</span>
-                        <span>{{ $video->created_at->diffForHumans() }}</span>
+                        <span>{{ $currentVideo->created_at->diffForHumans() }}</span>
                     </div>
-                    <p class="text-gray-800 whitespace-pre-line leading-relaxed">{{ $video->description }}</p>
+                    <p class="text-gray-800 whitespace-pre-line leading-relaxed">{{ $currentVideo->description }}</p>
                 </div>
 
                 {{-- 💬 YORUMLAR --}}
@@ -128,13 +130,13 @@
                         >
                         <input
                             v-model="newComment"
-                            @keyup.enter="postComment({{ $video->id }})"
+                            @keyup.enter="postComment({{ $currentVideo->id }})"
                             type="text"
                             placeholder="Yorum ekle..."
                             class="flex-1 bg-transparent border-b border-gray-300 focus:border-gray-600 text-gray-800 pb-2 outline-none placeholder-gray-500"
                         >
                         <button
-                            @click="postComment({{ $video->id }})"
+                            @click="postComment({{ $currentVideo->id }})"
                             class="px-5 py-2 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm border border-gray-300 hover:bg-gray-200 active:scale-95 transition duration-200 flex items-center gap-2"
                         >
                             <i class="fas fa-paper-plane text-gray-700"></i>
@@ -163,7 +165,7 @@
                                     </div>
                                     <button
                                         v-if="comment.user_id === appStore.auth?.id"
-                                        @click="deleteComment({{ $video->id }}, comment.id)"
+                                        @click="deleteComment({{ $currentVideo->id }}, comment.id)"
                                         class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 text-xs transition"
                                         title="Yorumu Sil"
                                     >
@@ -193,7 +195,7 @@
                                                 </div>
                                                 <button
                                                     v-if="reply.user_id === appStore.auth?.id"
-                                                    @click="deleteComment({{ $video->id }}, reply.id)"
+                                                    @click="deleteComment({{ $currentVideo->id }}, reply.id)"
                                                     class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-600 text-xs transition"
                                                     title="Yorumu Sil"
                                                 >
@@ -218,7 +220,7 @@
                                             class="w-full bg-transparent border-b border-gray-300 focus:border-blue-600 text-sm pb-1 outline-none transition"
                                         >
                                         <button
-                                            @click="replyToComment({{ $video->id }}, comment.id, comment.replyText)"
+                                            @click="replyToComment({{ $currentVideo->id }}, comment.id, comment.replyText)"
                                             class="absolute right-0 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline transition"
                                         >
                                             Paylaş
@@ -234,26 +236,7 @@
             {{-- SAĞ BÖLÜM: Önerilen Videolar --}}
             <aside class="lg:w-96 w-full space-y-3">
                 @foreach($videos as $video)
-				<x-video :video="$video" />
-					{{-- <a href="{{ route('video.watch', $video->uid) }}">
-						<div class="flex gap-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition">
-							<div class="relative w-40 flex-shrink-0 rounded-md overflow-hidden">
-								<img src="{{ $video->thumbnail_url }}" class="w-full h-full object-cover">
-								<div class="absolute bottom-1 right-1 bg-black/80 text-white text-xs px-2 py-0.5 rounded">
-								{{ str_pad($video->duration, 2, '0', STR_PAD_LEFT) }}
-								</div>
-							</div>
-							<div class="flex-1 min-w-0">
-								<h3 class="text-sm font-medium text-gray-900 line-clamp-2">
-									{{ $video->title }}
-								</h3>
-								<p class="text-gray-600 text-xs mt-1">{{ $video->channel->name }}</p>
-								<p class="text-gray-500 text-xs mt-1">
-									{{ number_format($video->views) }} görüntüleme • {{ $video->created_at->diffForHumans() }}
-								</p>
-							</div>
-						</div>
-					</a> --}}
+					<x-video :video="$video" />
                 @endforeach
             </aside>
         </div>
@@ -272,7 +255,7 @@
 			},
                 data() {
                     return {
-						showModal: true,
+						showModal: false,
                         isSubscribed: false,
                         subscriberCount: 0,
                         animating: false,
@@ -293,8 +276,8 @@
                 mounted() {
 					
 
-                    const channelId = {{ $video->channel->id }};
-                    const videoId = {{ $video->id }};
+                    const channelId = {{ $currentVideo->channel->id }};
+                    const videoId = {{ $currentVideo->id }};
 
                     axios.get(`/api/check-subscription/${channelId}`).then(res => {
                         this.isSubscribed = res.data.subscribed;
@@ -381,7 +364,7 @@
 					},
 					
 					async onVideoEnded() {
-						const videoId = {{ $video->id }};
+						const videoId = {{ $currentVideo->id }};
 						const result = await axios.post(`/api/videos/${videoId}/end`);
 						return result.data;
 					},

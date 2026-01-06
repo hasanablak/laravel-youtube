@@ -37,11 +37,11 @@
                         <h3 class="text-white text-sm font-medium mb-2">Video bağlantısı</h3>
                         <div class="flex">
                             <input type="text"
-                                   value="{{ route('video.watch', $video->uid) }}"
+                                   value="{{ route('videos.show', $video->uid) }}"
                                    class="flex-1 bg-[#282828] text-white px-3 py-2 rounded-l-lg border border-[#3f3f3f] focus:outline-none"
                                    readonly>
                             <button type="button"
-                                    onclick="navigator.clipboard.writeText('{{ route('video.watch', $video->uid) }}')"
+                                    onclick="navigator.clipboard.writeText('{{ route('videos.show', $video->uid) }}')"
                                     class="px-4 py-2 bg-[#3f3f3f] text-white rounded-r-lg hover:bg-[#4f4f4f] transition-colors">
                                 Kopyala
                             </button>

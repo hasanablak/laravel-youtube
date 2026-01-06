@@ -112,7 +112,7 @@ class VideoController extends Controller
         ]);
     }
 
-    public function video($video)
+    public function show($video)
     {
 		if(auth()->check()){
 			$daily_watch_count = WatchHistory::where('user_id', auth()->id())
@@ -123,7 +123,6 @@ class VideoController extends Controller
 			}
 		}
         $video = Video::where('uid',$video)->with('channel')->first();
-
 		$video->update([
 			'views' => $video->views + 1,
 		]);
@@ -140,7 +139,10 @@ class VideoController extends Controller
 
 		
 
-        return view('pages.video-page',["video"=>$video,"videos"=>$videos]);
+        return view('pages.video-page',[
+			"currentVideo" => $video,
+			"videos" => $videos
+		]);
     }
 
     public function subscribe($channel_id)
