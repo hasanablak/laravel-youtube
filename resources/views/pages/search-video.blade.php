@@ -17,7 +17,7 @@
         {{-- Video listesi alt alta --}}
         <div class="space-y-6">
             @forelse($videos as $video)
-                <a href="{{ route('video.watch', $video->uid) }}" class="block group">
+                <a href="{{ route('videos.show', $video->uid) }}" class="block group">
                     <div class="flex flex-col sm:flex-row gap-4 border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition bg-white">
 
                         {{-- Thumbnail --}}

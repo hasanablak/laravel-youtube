@@ -19,7 +19,7 @@ Route::get('/login', [AuthController::class, 'loginPage'])->name('login.page');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 
 Route::get('/channels/{channel}', [VideoController::class,'channel'])->name('channel');
-Route::get('/watch/{video}', [VideoController::class,'video'])->name('video.watch');
+Route::get('/watch/{video}', [VideoController::class,'show'])->name('videos.show');
 
 Route::get('/api/count/{video_id}',[VideoController::class, 'countLikeDislike'])
     ->name('count.like-dislike');
