@@ -54,16 +54,26 @@ window.app.mixin({
 	},
 	mounted() {
 		document.querySelectorAll('[data-element="video-card"]').forEach(el => {
-			// el.addEventListener('mouseenter', () => {
-			// 	el.querySelector('data-thumbnail-type="image"').classList.add('hidden');
-			// 	el.querySelector('data-thumbnail-type="gif"').classList.remove('hidden');
+			el.addEventListener('mouseenter', () => {
+				el.querySelector('data-thumbnail-type="image"').classList.add('hidden');
+				el.querySelector('data-thumbnail-type="gif"').classList.remove('hidden');
 			
-			// });
+			});
 
-			// el.addEventListener('mouseleave', () => {
-			// 	el.querySelector('data-thumbnail-type="image"').classList.remove('hidden');
-			// 	el.querySelector('data-thumbnail-type="gif"').classList.add('hidden');
-			// });
+			el.addEventListener('mouseleave', () => {
+				el.querySelector('data-thumbnail-type="image"').classList.remove('hidden');
+				el.querySelector('data-thumbnail-type="gif"').classList.add('hidden');
+			});
+		});
+
+		document.querySelectorAll('[data-speech="true"]').forEach(el => {
+			el.addEventListener('mouseenter', () => {
+				const text = el.getAttribute('data-speech-text');
+				if (text) {
+					window.speechSynthesis.cancel(); // Önceki konuşmayı durdur
+					window.TextToSpeech(text);
+				}
+			});
 		});
 	}
 })

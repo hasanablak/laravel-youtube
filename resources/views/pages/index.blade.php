@@ -10,7 +10,7 @@
               <h2 class="text-2xl font-bold text-pink-600 mb-4">Kanallar</h2>
             <div class="flex flex-wrap gap-4 pb-4">
                 @foreach($channels as $channel)
-                    <a href="{{ route('channel', $channel->slug) }}" 
+                    <a data-speech="true" data-speech-text="{{ $channel->name }}" href="{{ route('channel', $channel->slug) }}" 
                        class="flex-shrink-0 group">
                         <div class="flex flex-col items-center">
                             {{-- Channel Avatar --}}
@@ -26,7 +26,7 @@
                                     @endif
                             </div>
                             {{-- Channel Name --}}
-                                <span class="text-sm font-medium text-pink-600 group-hover:text-pink-700 text-center max-w-[80px] line-clamp-2">
+                                <span  class="text-sm font-medium text-pink-600 group-hover:text-pink-700 text-center max-w-[80px] line-clamp-2">
                                 {{ $channel->name }}
                             </span>
                         </div>
