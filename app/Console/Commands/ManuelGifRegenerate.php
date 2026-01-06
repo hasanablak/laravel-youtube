@@ -90,7 +90,7 @@ class ManuelGifRegenerate extends Command
 
                 try {
                     // GIF'i yeniden oluştur
-                    app(VideoService::class)->generateGif($video, 'manuel-videos');
+                    app(VideoService::class)->generateGif($video, 'manuel-videos', $file);
                     $this->info('  ✅ GIF başarıyla oluşturuldu');
                     $processedCount++;
                 } catch (\Exception $e) {
