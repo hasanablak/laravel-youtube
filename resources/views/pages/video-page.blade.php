@@ -333,10 +333,6 @@
 					}
                 },
 				created(){
-					this.openGameModal();
-
-				},
-				created2(){
 
 					const self = this;
 					setTimeout(() => {
