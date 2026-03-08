@@ -235,7 +235,7 @@
 
             {{-- SAĞ BÖLÜM: Önerilen Videolar --}}
             <aside class="lg:w-96 w-full space-y-3">
-                @foreach($videos as $video)
+                @foreach($recommendationVideos as $video)
 					<x-video :video="$video" />
                 @endforeach
             </aside>

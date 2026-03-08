@@ -127,21 +127,16 @@ class VideoController extends Controller
 			'views' => $video->views + 1,
 		]);
 
-        
-
-        $videos = Video::orderBy('views', 'asc')
-        ->inRandomOrder()
-        ->limit(10)
-        ->whereNot('id', $video->id)
-        ->whereNotIn("channel_id", config('app.black_list_channel_ids'))
-        ->get();
-
-
-		
+        // Video önerilerini VideoService üzerinden al
+        $recommendationVideos = app(VideoService::class)->getRecommendedVideos(
+            $video,
+            auth()->id(),
+            10
+        );
 
         return view('pages.video-page',[
 			"currentVideo" => $video,
-			"videos" => $videos
+			"recommendationVideos" => $recommendationVideos
 		]);
     }
 
