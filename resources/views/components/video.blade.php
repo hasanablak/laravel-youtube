@@ -8,13 +8,17 @@
 	{{-- Thumbnail --}}
 	<div class="relative aspect-video overflow-hidden">
 		<a href="{{ route('videos.show', $video->uid) }}" class="block w-full h-full">
-			<img data-thumbnail-type="image" src="{{ Storage::url('videos/' . $video->uid . '/' . $video->thumbnail_image) }}"
+			<img data-thumbnail-type="image" src="{{ $video->thumbnail_url }}"
 					alt="{{ $video->title }}"
 					class="w-full h-full object-cover transform group-hover:scale-105 transition duration-300">
 				<img 
 					data-thumbnail-type="gif" 
 					class="absolute top-0 left-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300" 
-					src="{{ $video->thumbnail_gif_url }}" alt="">
+					src="{{ $video->thumbnail_gif_url }}" alt=""
+					onerror="this.src = '{{ $video->thumbnail_url }}'">
+
+				{{-- <video src="{{ $video->video_url }}" class="w-full h-full object-cover"></video> --}}
+				
 
 			<div class="absolute bottom-2 right-2 bg-pink-600 text-white text-xs px-2 py-1 rounded-lg">
 				{{ $video->duration ?? '0:00' }}
