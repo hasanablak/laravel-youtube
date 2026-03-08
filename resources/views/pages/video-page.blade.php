@@ -242,9 +242,9 @@
         </div>
     </div>
 	<Modal size="lg" v-if="showModal" :hide-header="true" :allow-back-drop-click="false" :hide-footer="true">
-		<template v-slot:header> [İÇERİK BURAYA] </template>
+		<template v-slot:header> .. </template>
 		<template v-slot:body> 
-			<iframe width="1200px" height="600px" src="/games/karsiya-gecirme-big-small/index.html" frameborder="0"></iframe>	
+			<iframe width="1200px" height="600px" src="/games/karsiya-gecirme/index.html" frameborder="0"></iframe>	
 		</template>
 	</Modal>
     @push('footer')
@@ -318,7 +318,7 @@
 								clearTimeout(this.fiveMinuteTimer);
 							}
 							this.fiveMinuteTimer = setTimeout(() => {
-								this.openModalAfterFiveMinutes();
+								this.openGameModal();
 								this.onVideoEnded();
 							}, 60 * 5 * 1000); // 5 dakika = 300.000 ms
 						});
@@ -333,6 +333,11 @@
 					}
                 },
 				created(){
+					this.openGameModal();
+
+				},
+				created2(){
+
 					const self = this;
 					setTimeout(() => {
 						window.addEventListener('message', function(event) {
@@ -348,10 +353,11 @@
 							}, 1800);
 						});
 					}, 1000);
+
 				},
                 methods: {
 					
-					openModalAfterFiveMinutes() {
+					openGameModal() {
 						// Videoyu duraklat
 						const videoElement = document.getElementById('video');
 						if (videoElement && !videoElement.paused) {
