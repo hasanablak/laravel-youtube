@@ -97,8 +97,8 @@ use Illuminate\Support\Str;
 			$recommendationVideos = collect();
 			$blacklistChannelIds = config('app.black_list_channel_ids', []);
 
-			// 1. Aynı kanaldaki, hiç izlemedikleri videolar (2 adet)
-			$sameChannelLimit = min(2, $limit);
+			// 1. Aynı kanaldaki, hiç izlemedikleri videolar (1 adet)
+			$sameChannelLimit = min(1, $limit);
 			$sameChannelVideos = $this->getSameChannelRecommendations(
 				$currentVideo,
 				$userId,
