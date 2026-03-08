@@ -93,11 +93,18 @@ class VideoController extends Controller
     {
         $channel = Channel::with([
                 'videos' => function ($q) {
-                    $q->withExists([
+                    $q->withCount([
+                        'watchHistories as user_watch_count' => function ($q) {
+                            $q->where('user_id', auth()->id());
+                        }
+                    ])
+                    ->withExists([
                         'watchHistories as watched_by_auth_user' => function ($q) {
                             $q->where('user_id', auth()->id());
                         }
-                    ]);
+                    ])
+                    ->orderBy('user_watch_count', 'asc')
+                    ->orderBy('views', 'desc');
                 }
             ])->where('slug', $channel)
             ->first();

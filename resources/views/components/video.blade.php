@@ -1,8 +1,5 @@
 <div
 	data-element="video-card"
-	@if($video->watched_by_auth_user)
-			 style="opacity:0.5"
-	@endif
 	@mouseenter='speechText(@json($video->title))' 
 	class="group bg-pink-50 border border-pink-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow transform hover:-translate-y-1">
 	{{-- Thumbnail --}}
@@ -23,6 +20,11 @@
 			<div class="absolute bottom-2 right-2 bg-pink-600 text-white text-xs px-2 py-1 rounded-lg">
 				{{ $video->duration ?? '0:00' }}
 			</div>
+			@if($video->watched_by_auth_user)
+				<div class="absolute top-2 left-2 flex items-center gap-1 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md animate-bounce-once">
+					<span class="text-base leading-none">✅ ✅ ✅</span>
+				</div>
+			@endif
 		</a>
 	</div>
 
