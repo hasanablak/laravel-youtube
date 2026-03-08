@@ -177,7 +177,7 @@ use Illuminate\Support\Str;
 				$query->withCount(['watchHistories as user_watch_count' => function ($q) use ($userId) {
 					$q->where('user_id', $userId);
 				}])
-				->orderBy('user_watch_count', 'asc')
+				->orderByRaw('user_watch_count ASC')
 				->orderBy('views', 'desc');
 			} else {
 				$query->orderBy('views', 'desc');
@@ -203,14 +203,12 @@ use Illuminate\Support\Str;
 				->whereNotIn('id', $excludeVideoIds);
 
 			if ($userId) {
-				$query->withCount(['watchHistories as user_watch_count' => function ($q) use ($userId) {
+				$query->whereDoesntHave('watchHistories', function ($q) use ($userId) {
 					$q->where('user_id', $userId);
-				}])
-				->having('user_watch_count', '=', 0)
-				->orderBy('views', 'desc');
-			} else {
-				$query->orderBy('views', 'desc');
+				});
 			}
+
+			$query->orderBy('views', 'desc');
 
 			return $query->limit($limit)->get();
 		}
@@ -229,10 +227,12 @@ use Illuminate\Support\Str;
 				->whereNot('id', $currentVideo->id)
 				->whereNotIn('channel_id', $blacklistChannelIds)
 				->whereNotIn('id', $excludeVideoIds)
+				->whereHas('watchHistories', function ($q) use ($userId) {
+					$q->where('user_id', $userId);
+				})
 				->withCount(['watchHistories as user_watch_count' => function ($q) use ($userId) {
 					$q->where('user_id', $userId);
 				}])
-				->having('user_watch_count', '>', 0)
 				->orderBy('user_watch_count', 'asc')
 				->orderBy('views', 'desc')
 				->limit($limit)
