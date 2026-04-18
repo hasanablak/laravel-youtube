@@ -53,7 +53,7 @@ class VideoController extends Controller
 						'visibility' => "public",
 						'image' => $imagePath,
 				]);
-		
+
 		if(!$imagePath){
 			app(VideoService::class)->generateThumbnail($video);
 		}
@@ -109,9 +109,9 @@ class VideoController extends Controller
             ])->where('slug', $channel)
             ->first();
 
-        
+
         return view('pages.channel',[
-            'channel'=>$channel, 
+            'channel'=>$channel,
             'totalVideoCount'=>count($channel->videos),
             'totalWatchCount'=> $channel->videos->sum(function($video){
                 return $video->watchHistories()->count();
@@ -327,8 +327,8 @@ class VideoController extends Controller
 		if (Auth::check()) {
 			// Aynı saat içinde aynı video için kayıt var mı kontrol et
 			$hourStart = now()->startOfHour();
-			$hourEnd = now()->endOfHour();
-			
+			$hourEnd = now()->addHours()->endOfHours(2);
+
 			$existingWatch = WatchHistory::where('user_id', Auth::id())
 				->where('video_id', $videoId)
 				->whereBetween('watched_at', [$hourStart, $hourEnd])
@@ -372,4 +372,17 @@ class VideoController extends Controller
 			'limit_exceeded' => false,
 		]);
 	}
+
+    public function videoWatchLimitReached(){
+        $todayWatchedVideoIds = WatchHistory::select('video_id')
+                ->where('user_id', auth()->id())
+				->whereDate('watched_at', now()->toDateString())
+				->get()->pluck('video_id');
+        $todayWatchedVideos = Video::whereIn('id', $todayWatchedVideoIds)->get();
+
+
+        return view('pages.errors.video-watch-limit-reached', [
+            "todayWatchedVideos" => $todayWatchedVideos
+        ]);
+    }
 }

@@ -66,7 +66,7 @@ Route::group(['middleware' => ['web','auth']], function (){
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
-Route::view('/errors/video-watch-limit-reached', 'pages.errors.video-watch-limit-reached')->name('errors.video-watch-limit-reached');
+Route::get('/errors/video-watch-limit-reached', [VideoController::class, "videoWatchLimitReached"])->name('errors.video-watch-limit-reached');
 
 Route::get('/admin', function () {
 	$modules = Module::all();

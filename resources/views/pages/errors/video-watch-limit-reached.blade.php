@@ -6,6 +6,7 @@
 @section('content')
 
 <div class="limit-container">
+
     <div class="stars">
         <div class="star">⭐</div>
         <div class="star">✨</div>
@@ -24,7 +25,7 @@
                 <video autoplay muted loop playsinline class="limit-video">
                     <source src="{{ asset('assets/videos/bye-bye-' . $rand . '/video-1.mp4') }}" type="video/mp4">
                 </video>
-				
+
                 <div class="video-overlay">
                     <div class="overlay-text">👋 Ekranı Kapat</div>
                     <div class="overlay-subtext">Oyuncaklarla Oynama Zamanı!</div>
@@ -36,17 +37,27 @@
         </div>
 
         <div class="emoji-big">🎮</div>
-        
+
         <h1 class="limit-title">Mola Zamanı!</h1>
-        
+
         <p class="limit-message">
             Bugün çok fazla video izledin! 🎉<br>
             Şimdi bu çocuk gibi ekranı kapat ve oyuncaklarınla oyna!
         </p>
+        <div class="activity-suggestions">
+            <div class="activity-title">Neler İzledim? 🤔</div>
 
+            <div class="activities">
+            @foreach($todayWatchedVideos as $video)
+
+                    <x-video :video="$video" />
+            @endforeach
+                </div>
+
+        </div>
         <div class="activity-suggestions">
             <div class="activity-title">Şimdi Ne Yapabilirsin? 🤔</div>
-            
+
             <div class="activities">
                 <div class="activity-item" title="Oyun Oyna">
                     🎲
@@ -329,15 +340,15 @@
         .limit-card {
             padding: 40px 20px;
         }
-        
+
         .limit-title {
             font-size: 36px;
         }
-        
+
         .limit-message {
             font-size: 20px;
         }
-        
+
         .emoji-big {
             font-size: 60px;
         }

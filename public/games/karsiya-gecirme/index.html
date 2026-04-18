@@ -47,11 +47,11 @@
             top: 0;
             width: 200px;
             height: 100%;
-            background: linear-gradient(to bottom, 
-                #4A90E2 0%, 
-                #5BA3F5 25%, 
-                #4A90E2 50%, 
-                #5BA3F5 75%, 
+            background: linear-gradient(to bottom,
+                #4A90E2 0%,
+                #5BA3F5 25%,
+                #4A90E2 50%,
+                #5BA3F5 75%,
                 #4A90E2 100%);
             transform: translateX(-50%);
             animation: flow 3s linear infinite;
@@ -121,7 +121,7 @@
             -webkit-user-select: none;
             z-index: 10;
         }
-        
+
         .animal.dragging {
             cursor: grabbing;
             z-index: 1000;
@@ -129,7 +129,7 @@
             transform: scale(1.3);
             animation: bounce 0.5s ease-in-out infinite;
         }
-        
+
         .animal.dragging::before {
             content: '';
             position: absolute;
@@ -137,8 +137,8 @@
             left: -10px;
             right: -10px;
             bottom: -10px;
-            background: linear-gradient(45deg, 
-                #ff0000, #ff7f00, #ffff00, #00ff00, 
+            background: linear-gradient(45deg,
+                #ff0000, #ff7f00, #ffff00, #00ff00,
                 #0000ff, #4b0082, #9400d3, #ff0000);
             background-size: 400% 400%;
             border-radius: 50%;
@@ -147,7 +147,7 @@
             z-index: -1;
             animation: rainbowGlow 1.5s linear infinite;
         }
-        
+
         .animal.dragging::after {
             content: '✨';
             position: absolute;
@@ -156,24 +156,24 @@
             right: -20px;
             animation: sparkle 1s ease-in-out infinite;
         }
-        
+
         @keyframes rainbowGlow {
             0% { background-position: 0% 50%; }
             100% { background-position: 400% 50%; }
         }
-        
+
         @keyframes bounce {
             0%, 100% { transform: scale(1.3) translateY(0); }
             50% { transform: scale(1.3) translateY(-10px); }
         }
-        
+
         @keyframes sparkle {
-            0%, 100% { 
-                opacity: 1; 
+            0%, 100% {
+                opacity: 1;
                 transform: rotate(0deg) scale(1);
             }
-            50% { 
-                opacity: 0.5; 
+            50% {
+                opacity: 0.5;
                 transform: rotate(180deg) scale(1.5);
             }
         }
@@ -373,18 +373,18 @@
     <div id="game-container">
         <div id="instruction" style="opacity: 0.4;">Hadi <span id="target-word"></span>'i karşıya geçir!</div>
         <button id="speaker-btn" onclick="speakInstruction()">🔊</button>
-        
+
         <div class="ground ground-left">
             <div class="grass"></div>
         </div>
-        
+
         <div id="river">
             <div class="wave"></div>
             <div class="wave"></div>
             <div class="wave"></div>
             <div class="wave"></div>
         </div>
-        
+
         <div class="ground ground-right">
             <div class="grass"></div>
         </div>
@@ -399,9 +399,9 @@
 
     <script>
         const animals = [
-            { 
-				name: 'sheep', 
-				turkish: 'Koyun', 
+            {
+				name: 'sheep',
+				turkish: 'Koyun',
 				images: ['./assets/images/sheep.png'],
 				speech: [
 					'./assets/speech/sheep.mp3',
@@ -409,9 +409,9 @@
 				],
 				counter:0
 			},
-            { 
-				name: 'cow', 
-				turkish: 'İnek', 
+            {
+				name: 'cow',
+				turkish: 'İnek',
 				images: ['./assets/images/cow.png'],
 				speech: [
 					'./assets/speech/cow.mp3',
@@ -419,18 +419,18 @@
 				],
 				counter:0
 			},
-            { 
-				name: 'dog', 
-				turkish: 'Köpek', 
+            {
+				name: 'dog',
+				turkish: 'Köpek',
 				images: ['./assets/images/dog.png'],
 				speech: [
 					'./assets/speech/dog.mp3'
 				],
 				counter:0
 			},
-            { 
-				name: 'cat', 
-				turkish: 'Kedi', 
+            {
+				name: 'cat',
+				turkish: 'Kedi',
 				images: ['./assets/images/cat.png'],
 				speech: [
 					'./assets/speech/cat.mp3',
@@ -438,9 +438,9 @@
 				],
 				counter:0
 			},
-            { 
-				name: 'horse', 
-				turkish: 'At', 
+            {
+				name: 'horse',
+				turkish: 'At',
 				images: ['./assets/images/horse.png'],
 				speech: [
 					'./assets/speech/horse.mp3',
@@ -448,9 +448,9 @@
 				],
 				counter:0
 			},
-            { 
-				name: 'squirrel', 
-				turkish: 'Sincap', 
+            {
+				name: 'squirrel',
+				turkish: 'Sincap',
 				images: ['./assets/images/squirrel.png'],
 				speech: [
 					'./assets/speech/squirrel.mp3',
@@ -545,7 +545,52 @@
 					'./assets/speech/bird.mp3'
 				],
 				counter:0
-			}
+			},
+            {
+                name: 'lion',
+                turkish: 'Aslan',
+                images: ['./assets/images/lion.png'],
+                speech: [
+                    './assets/speech/lion.mp3'
+                ],
+                counter: 0
+            },
+            {
+                name: 'elephant',
+                turkish: 'Fil',
+                images: ['./assets/images/elephant.png'],
+                speech: [
+                    './assets/speech/elephant.mp3'
+                ],
+                counter: 0
+            },
+            {
+                name: 'rabbit',
+                turkish: 'Tavşan',
+                images: ['./assets/images/rabbit.png'],
+                speech: [
+                    './assets/speech/rabbit.mp3'
+                ],
+                counter: 0
+            },
+            {
+                name: 'apple',
+                turkish: 'Elma',
+                images: ['./assets/images/apple.png'],
+                speech: [
+                    './assets/speech/apple.mp3'
+                ],
+                counter: 0
+            },
+            {
+                name: 'car',
+                turkish: 'Araba',
+                images: ['./assets/images/car.png'],
+                speech: [
+                    './assets/speech/car.mp3'
+                ],
+                counter: 0
+            }
         ];
 
         let currentTarget = null;
@@ -614,13 +659,13 @@
         function selectLeastPlayedAnimal() {
             // Counter'a göre sırala
             const sortedAnimals = [...animals].sort((a, b) => a.counter - b.counter);
-            
+
             // En düşük counter değerini al
             const minCounter = sortedAnimals[0].counter;
-            
+
             // En düşük counter'a sahip tüm hayvanları filtrele
             const leastPlayed = sortedAnimals.filter(a => a.counter === minCounter);
-            
+
             // Bunlar arasından rastgele seç
             return leastPlayed[Math.floor(Math.random() * leastPlayed.length)];
         }
@@ -628,7 +673,7 @@
         function startGame() {
             // En az oynanan hayvanı hedef olarak seç
             currentTarget = selectLeastPlayedAnimal();
-            
+
             // Hedef + 2 rastgele hayvan seç
             currentAnimals = [currentTarget];
             let otherAnimals = animals.filter(a => a.name !== currentTarget.name);
@@ -637,14 +682,14 @@
                 currentAnimals.push(otherAnimals[randomIndex]);
                 otherAnimals.splice(randomIndex, 1);
             }
-            
+
             // Hayvanları karıştır
             currentAnimals.sort(() => Math.random() - 0.5);
-            
+
             // Ekrana yerleştir
             document.getElementById('target-word').textContent = currentTarget.name;
             renderAnimals();
-            
+
             // Sesli talimatı 500ms gecikmeyle çal
             setTimeout(() => {
                 speakInstruction(currentTarget);
@@ -654,29 +699,29 @@
         function renderAnimals() {
             const container = document.getElementById('animals-container');
             container.innerHTML = '';
-            
+
             currentAnimals.forEach((animal, index) => {
                 const div = document.createElement('div');
                 div.className = 'animal';
                 div.dataset.name = animal.name;
-                
+
                 // images array'inden rastgele bir resim seç
                 const randomImage = animal.images[Math.floor(Math.random() * animal.images.length)];
-                
+
                 const img = document.createElement('img');
                 img.src = randomImage;
                 img.alt = animal.turkish;
                 img.style.width = '180px';
                 img.style.height = '180px';
                 div.appendChild(img);
-                
+
                 const yPos = 10 + (index * 25);
                 div.style.left = '50px';
                 div.style.top = yPos + '%';
-                
+
                 // Hayvanı tıklama ile seç ve sürükle
                 div.addEventListener('click', handleAnimalClick);
-                
+
                 container.appendChild(div);
             });
         }
@@ -689,23 +734,23 @@
         function handleAnimalClick(e) {
             e.stopPropagation();
             const clickedAnimal = e.target.closest('.animal');
-            
+
             // Eğer başka bir hayvan sürükleniyorsa, onu bırak
             if (selectedAnimal && selectedAnimal !== clickedAnimal) {
                 selectedAnimal.classList.remove('dragging');
             }
-            
+
             // Eğer aynı hayvana tekrar tıklanırsa, bırak ve kontrol et
             if (selectedAnimal === clickedAnimal && isDragging) {
                 dropAnimal(clickedAnimal);
                 return;
             }
-            
+
             // Yeni hayvanı seç ve sürüklemeyi başlat
             selectedAnimal = clickedAnimal;
             isDragging = true;
             selectedAnimal.classList.add('dragging');
-            
+
             // Başlangıç pozisyonunu kaydet
             const rect = selectedAnimal.getBoundingClientRect();
             initialX = rect.left;
@@ -715,17 +760,17 @@
         function dropAnimal(animal) {
             isDragging = false;
             animal.classList.remove('dragging');
-            
+
             // Hayvanın pozisyonunu kontrol et
             const rect = animal.getBoundingClientRect();
             const rightGround = document.querySelector('.ground-right');
             const rightRect = rightGround.getBoundingClientRect();
-            
+
             // Sağ tarafta mı kontrol et
             if (rect.left > rightRect.left) {
                 checkAnswer(animal.dataset.name);
             }
-            
+
             selectedAnimal = null;
         }
 
@@ -734,7 +779,7 @@
             if (isDragging && selectedAnimal) {
                 const x = e.clientX - 60; // Hayvan genişliğinin yarısı
                 const y = e.clientY - 60; // Hayvan yüksekliğinin yarısı
-                
+
                 selectedAnimal.style.left = x + 'px';
                 selectedAnimal.style.top = y + 'px';
             }
@@ -753,7 +798,7 @@
                 const touch = e.touches[0];
                 const x = touch.clientX - 60;
                 const y = touch.clientY - 60;
-                
+
                 selectedAnimal.style.left = x + 'px';
                 selectedAnimal.style.top = y + 'px';
             }
@@ -773,18 +818,18 @@
         function checkAnswer(animalName) {
             const result = document.getElementById('result');
             const resultText = document.getElementById('result-text');
-            
+
             if (animalName === currentTarget.name) {
                 resultText.textContent = '🎉 Harika! Doğru!';
                 resultText.className = 'correct';
                 speak('./assets/speech/harika-basardin.mp3');
-                
+
                 // Başarılı olunca counter'ı 1 arttır
                 currentTarget.counter++;
-                
+
                 // Counter'ları localStorage'e kaydet
                 saveCountersToStorage();
-                
+
                 // CurrentAnimals'ı sessionStorage'e kaydet
                 saveCurrentAnimalsToSession();
 
@@ -797,7 +842,7 @@
                 resultText.className = 'incorrect';
                 speak('./assets/speech/olmadi-hadi-tekrar-deneyelim.mp3');
             }
-            
+
             result.classList.add('show');
         }
 
@@ -820,10 +865,10 @@
         function initializeGame() {
             // Önce localStorage'den counter'ları yükle
             loadCountersFromStorage();
-            
+
             // Sonra sessionStorage'den güncel counter'ları yükle (varsa üzerine yazar)
             loadCurrentAnimalsFromSession();
-            
+
             console.log('Hayvan counter durumu:', animals.map(a => ({ name: a.name, counter: a.counter })));
         }
 
