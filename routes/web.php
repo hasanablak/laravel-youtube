@@ -78,5 +78,5 @@ Route::get('/admin', function () {
 
 Route::get('/redirect', fn () => (redirect()->route('admin.dashboard')))->name('');
 
-Route::post('api/videos/{video}/end', [VideoController::class, 'onVideoEnd'])->name('api.videos.end');
+Route::post('api/videos/{video}/store-video-watching-activity', [VideoController::class, 'storeVideoWatchingActivity'])->name('api.videos.store-video-watching-activity');
 Route::get('api/check-daily-watch-limit', [VideoController::class, 'checkDailyWatchLimit'])->name('api.videos.check-daily-watch-limit');
