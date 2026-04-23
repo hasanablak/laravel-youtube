@@ -320,37 +320,111 @@ class VideoController extends Controller
             'dislikes'=>count($video->dislikes) ?? 0,
         ]);
     }
-
-	public function onVideoEnd($videoId)
+	
+	/**
+	 * Video İzleme Aktivitesi Kaydı (Watch History Tracker)
+	 *
+	 * Bu method, kullanıcının bir videoyu gerçekten izleyip izlemediğini doğrular;
+	 * video kısa ise 1 kez, uzunsa izlenen süreye orantılı olarak 2x, 3x şeklinde
+	 * watchHistory'e kaydeden akıllı bir izleme takip sistemidir.
+	 *
+	 * AMAÇ:
+	 * Yalnızca video sayısına (count) değil, izleme süresine de dayalı bir
+	 * günlük limit sistemi oluşturmak. Böylece kısa ve uzun videolar arasında
+	 * adil bir limit dengesi kurulur.
+	 *
+	 * ÇALIŞMA MANTIĞI:
+	 * - Frontend (video-page.blade.php), kullanıcı video izlerken bu methodu her 5 dakikada bir çağırır.
+	 * - Method her çağrıldığında şunu kontrol eder:
+	 *   "Bu video için son watchHistory kaydından itibaren 30 dakika geçti mi?"
+	 *   → Geçmediyse: kayıt eklenmez.
+	 *   → Geçtiyse: watchHistory'e yeni kayıt eklenir → watchLimit sayacı +1 artar.
+	 *
+	 * PAUSE / SEKME KAPAMA DURUMU:
+	 * - Kullanıcı videoyu durdurursa (pause): Frontend'deki 5 dakikalık interval
+	 *   temizlenir (clearInterval), method artık çağrılmaz.
+	 * - Kullanıcı videoyu tekrar başlatırsa (play): interval yeniden kurulur
+	 *   ve method tekrar çağrılmaya başlar.
+	 * - Bu sayede kullanıcı videoyu açık bırakıp başka bir şeyle ilgilenirse
+	 *   ya da videoyu durdurursa, o süre izleme süresi olarak sayılmaz.
+	 * - Yani bu sistem; sadece videonun oynatıldığı aktif süreyi ölçer.
+	 *
+	 * ÖRNEK SENARYO (40 dakikalık bir video):
+	 *
+	 *  Dakika  | Method Çağrısı | 30dk Geçti mi? | watchHistory Kaydı
+	 *  --------|----------------|----------------|--------------------
+	 *   5. dk  | ✅ İlk çağrı   | —  (ilk kayıt) | ✅ Kayıt eklenir (+1)
+	 *  10. dk  | ✅             | ❌ Hayır        | ⏭ Atlanır
+	 *  15. dk  | ✅             | ❌ Hayır        | ⏭ Atlanır
+	 *  20. dk  | ✅             | ❌ Hayır        | ⏭ Atlanır
+	 *  25. dk  | ✅             | ❌ Hayır        | ⏭ Atlanır
+	 *  30. dk  | ✅             | ❌ Hayır        | ⏭ Atlanır
+	 *  35. dk  | ✅             | ✅ Evet (30dk+) | ✅ Kayıt eklenir (+1)
+	 *  40. dk  | ✅             | ❌ Hayır        | ⏭ Atlanır
+	 *
+	 *  → Toplam: 40 dakikalık video için watchHistory'e 2 kayıt, watchLimit'e +2.
+	 *
+	 * KISACA:
+	 * - 5 dakikalık video izlenir  → watchLimit: +1
+	 * - 40 dakikalık video izlenir → watchLimit: +2
+	 * - 65 dakikalık video izlenir → watchLimit: +3
+	 * - Bu sayede limit; video adedine değil, izlenen toplam süreye göre işler.
+	 *
+	 * NOT:
+	 * 5 dakikalık ilk tetikleyici eşiği, çok kısa (5 dk altı) videoların
+	 * gereksiz yere kaydedilmesini önlemek için seçilmiştir.
+	 * Gerekirse bu eşik 2-3 dakikaya düşürülebilir.
+	 */
+	public function storeVideoWatchingActivity($videoId)
 	{
+		if (!Auth::check()) {
+			return response()->json(['success' => false, 'message' => 'Unauthorized.'], 401);
+		}
 
-		if (Auth::check()) {
-			// Aynı saat içinde aynı video için kayıt var mı kontrol et
-			$hourStart = now()->startOfHour();
-			$hourEnd = now()->addHours()->endOfHours(2);
+		$userId = Auth::id();
 
-			$existingWatch = WatchHistory::where('user_id', Auth::id())
-				->where('video_id', $videoId)
-				->whereBetween('watched_at', [$hourStart, $hourEnd])
-				->first();
+		// Bu video için kullanıcının en son watchHistory kaydını bul
+		$lastWatch = WatchHistory::where('user_id', $userId)
+			->where('video_id', $videoId)
+			->latest('watched_at')
+			->first();
 
-			// Eğer kayıt yoksa oluştur
-			if (!$existingWatch) {
-				WatchHistory::create([
-					'user_id' => Auth::id(),
-					'video_id' => $videoId,
-					'watched_at' => now(),
-				]);
+		$shouldRecord = false;
+
+		if (!$lastWatch) {
+			// Hiç kayıt yoksa bu ilk 5dk tetiklemesi, direkt kaydet
+			$shouldRecord = true;
+		} else {
+			// Son kayıttan itibaren 30 dakika geçti mi?
+			$minutesSinceLastWatch = $lastWatch->watched_at->diffInMinutes(now());
+			if ($minutesSinceLastWatch >= 30) {
+				$shouldRecord = true;
 			}
 		}
 
-		//check if user has exceeded daily limit
+		if ($shouldRecord) {
+			WatchHistory::create([
+				'user_id'    => $userId,
+				'video_id'   => $videoId,
+				'watched_at' => now(),
+			]);
+		}
 
+		// Kullanıcının günlük watchHistory kayıt sayısını kontrol et
+		$dailyWatchCount = WatchHistory::where('user_id', $userId)
+			->whereDate('watched_at', today())
+			->count();
 
+		$dailyLimit = 10; // örnek limit, config'den de alınabilir
 
 		return response()->json([
-			'success' => true,
-			'message' => 'Video bitiş işlemi kaydedildi.'
+			'success'          => true,
+			'recorded'         => $shouldRecord,
+			'daily_watch_count' => $dailyWatchCount,
+			'limit_exceeded'   => $dailyWatchCount >= $dailyLimit,
+			'message'          => $shouldRecord
+				? 'İzleme aktivitesi kaydedildi.'
+				: 'Henüz kayıt için 30 dakika geçmedi.',
 		]);
 	}
 

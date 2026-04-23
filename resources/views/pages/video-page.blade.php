@@ -279,20 +279,20 @@
                     const channelId = {{ $currentVideo->channel->id }};
                     const videoId = {{ $currentVideo->id }};
 
-                    axios.get(`/api/check-subscription/${channelId}`).then(res => {
-                        this.isSubscribed = res.data.subscribed;
-                        this.subscriberCount = res.data.count;
-                    }).catch(()=>{});
+                    // axios.get(`/api/check-subscription/${channelId}`).then(res => {
+                    //     this.isSubscribed = res.data.subscribed;
+                    //     this.subscriberCount = res.data.count;
+                    // }).catch(()=>{});
 
                     axios.get(`/api/count/${videoId}`).then(res => {
                         this.likeCount = res.data.likes;
                         this.dislikeCount = res.data.dislikes;
                     }).catch(()=>{});
 
-                    axios.get(`/api/check-like/${videoId}`).then(res => {
-                        this.liked = !!res.data.like;
-                        this.disliked = !!res.data.dislike;
-                    }).catch(()=>{});
+                    // axios.get(`/api/check-like/${videoId}`).then(res => {
+                    //     this.liked = !!res.data.like;
+                    //     this.disliked = !!res.data.dislike;
+                    // }).catch(()=>{});
 
                     this.fetchComments(videoId);
 					
@@ -300,7 +300,7 @@
 					const videoElement = document.getElementById('video');
 					if (videoElement) {
 						// videoElement.addEventListener('ended', async () => {
-						// 	await this.onVideoEnded();
+						// 	await this.storeVideoWatchingActivity();
 						// 	const limitExceeded = await this.checkDailyWatchLimit();
 						// 	if (limitExceeded) {
 						// 		window.location.href = '/errors/video-watch-limit-reached';
@@ -319,7 +319,7 @@
 							}
 							this.fiveMinuteTimer = setTimeout(() => {
 								this.openGameModal();
-								this.onVideoEnded();
+								this.storeVideoWatchingActivity();
 							}, 60 * 5 * 1000); // 5 dakika = 300.000 ms
 						});
 						
@@ -365,9 +365,9 @@
 						this.showModal = true;
 					},
 					
-					async onVideoEnded() {
+					async storeVideoWatchingActivity() {
 						const videoId = {{ $currentVideo->id }};
-						const result = await axios.post(`/api/videos/${videoId}/end`);
+						const result = await axios.post(`/api/videos/${videoId}/store-video-watching-activity`);
 						return result.data;
 					},
 
