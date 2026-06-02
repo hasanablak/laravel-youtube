@@ -453,8 +453,9 @@
 				turkish: 'Sincap',
 				images: ['./assets/images/squirrel.png'],
 				speech: [
-					'./assets/speech/squirrel.mp3',
-					'./assets/speech/squirrel-2.mp3'
+					// './assets/speech/squirrel.mp3',
+					// './assets/speech/squirrel-2.mp3',
+					'./assets/speech/squirrel-3.mp3',
 				],
 				counter:0
 			},
@@ -542,7 +543,8 @@
 					'./assets/images/bird.png'
 				],
 				speech: [
-					'./assets/speech/bird.mp3'
+					'./assets/speech/bird.mp3',
+					'./assets/speech/bird-2.mp3',
 				],
 				counter:0
 			},
@@ -560,7 +562,8 @@
                 turkish: 'Fil',
                 images: ['./assets/images/elephant.png'],
                 speech: [
-                    './assets/speech/elephant.mp3'
+                    // './assets/speech/elephant.mp3',
+                    './assets/speech/elephant-2.mp3',
                 ],
                 counter: 0
             },
@@ -590,7 +593,79 @@
                     './assets/speech/car.mp3'
                 ],
                 counter: 0
-            }
+            },
+            {
+				name: 'bee',
+				turkish: 'Arı',
+				images: ['./assets/images/bee.png'],
+				speech: [
+					'./assets/speech/bee.mp3'
+				],
+				counter: 0
+            },
+            {
+				name: 'chicken',
+				turkish: 'Tavuk',
+				images: ['./assets/images/chicken.png'],
+				speech: [
+					'./assets/speech/chicken.mp3'
+				],
+				counter: 0
+            },
+			{
+				name: 'chameleon',
+				turkish: 'Bukalemun',
+				images: ['./assets/images/chameleon.png'],
+				speech: [
+				'./assets/speech/chameleon.mp3'
+				],
+				counter: 0
+			},
+			{
+				name: 'carrot',
+				turkish: 'Havuç',
+				images: ['./assets/images/carrot.png'],
+				speech: [
+				'./assets/speech/carrot.mp3'
+				],
+				counter: 0
+			},
+			{
+				name: 'whale',
+				turkish: 'Balina',
+				images: ['./assets/images/whale.png'],
+				speech: [
+				'./assets/speech/whale.mp3'
+				],
+				counter: 0
+			},
+			{
+				name: 'frog',
+				turkish: 'Kurbağa',
+				images: ['./assets/images/frog.png'],
+				speech: [
+				'./assets/speech/frog.mp3'
+				],
+				counter: 0
+			},
+			{
+				name: 'donkey',
+				turkish: 'Eşek',
+				images: ['./assets/images/donkey.png'],
+				speech: [
+				'./assets/speech/donkey.mp3'
+				],
+				counter: 0
+			},
+			{
+				name: 'parrot',
+				turkish: 'Papağan',
+				images: ['./assets/images/parrot-1.png', './assets/images/parrot-2.png'],
+				speech: [
+				'./assets/speech/parrot.mp3'
+				],
+				counter: 0
+			},
         ];
 
         let currentTarget = null;
@@ -620,20 +695,22 @@
 
         // Counter'ları localStorage'e kaydet
         function saveCountersToStorage() {
-            const countersData = animals.map(animal => ({
-                name: animal.name,
-                counter: animal.counter
-            }));
+            const countersData = animals
+				.filter(animal => animal.counter > 0)
+				.map(animal => ({
+					name: animal.name,
+					counter: animal.counter
+				}));
             localStorage.setItem('animalCounters', JSON.stringify(countersData));
         }
 
-        // SessionStorage'den currentAnimals'ı yükle
+        // localStorage'den currentAnimals'ı yükle
         function loadCurrentAnimalsFromSession() {
-            const savedCurrentAnimals = sessionStorage.getItem('currentAnimals');
+            const savedCurrentAnimals = localStorage.getItem('currentAnimals');
             if (savedCurrentAnimals) {
                 try {
                     const sessionAnimals = JSON.parse(savedCurrentAnimals);
-                    // SessionStorage'deki counter'ları animals dizisine aktar
+                    // local'deki counter'ları animals dizisine aktar
                     animals.forEach(animal => {
                         const sessionAnimal = sessionAnimals.find(a => a.name === animal.name);
                         if (sessionAnimal) {
@@ -646,13 +723,13 @@
             }
         }
 
-        // CurrentAnimals'ı sessionStorage'e kaydet
+        // CurrentAnimals'ı local'e kaydet
         function saveCurrentAnimalsToSession() {
             const sessionData = animals.map(animal => ({
                 name: animal.name,
                 counter: animal.counter
             }));
-            sessionStorage.setItem('currentAnimals', JSON.stringify(sessionData));
+            localStorage.setItem('currentAnimals', JSON.stringify(sessionData));
         }
 
         // En az oynanan hayvanı seç (counter'a göre)
@@ -830,7 +907,7 @@
                 // Counter'ları localStorage'e kaydet
                 saveCountersToStorage();
 
-                // CurrentAnimals'ı sessionStorage'e kaydet
+                // CurrentAnimals'ı localStorage'e kaydet
                 saveCurrentAnimalsToSession();
 
 				window.parent.postMessage({
@@ -866,7 +943,7 @@
             // Önce localStorage'den counter'ları yükle
             loadCountersFromStorage();
 
-            // Sonra sessionStorage'den güncel counter'ları yükle (varsa üzerine yazar)
+            // Sonra localStorage'den güncel counter'ları yükle (varsa üzerine yazar)
             loadCurrentAnimalsFromSession();
 
             console.log('Hayvan counter durumu:', animals.map(a => ({ name: a.name, counter: a.counter })));
@@ -883,6 +960,8 @@
 			// Mesajın doğru kaynaktan geldiğini kontrol et
 				//alert('Mesaj alındı: ' + event.data);
 		});
+
+		//startGameFromModal();
     </script>
 </body>
 </html>
