@@ -244,7 +244,7 @@
 	<Modal size="lg" v-if="showModal" :hide-header="true" :allow-back-drop-click="false" :hide-footer="true">
 		<template v-slot:header> .. </template>
 		<template v-slot:body> 
-			<iframe width="1200px" height="600px" src="/games/karsiya-gecirme/index.html" frameborder="0"></iframe>	
+			<iframe width="1200px" height="600px" src="/games/want-to/index.html" frameborder="0"></iframe>	
 		</template>
 	</Modal>
     @push('footer')
