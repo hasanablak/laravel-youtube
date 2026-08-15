@@ -188,6 +188,100 @@
             transform: scale(1.08);
         }
 
+        .item.hint-target {
+            z-index: 20;
+        }
+
+        .item.hint-target:not(.dragging)::before {
+            content: '';
+            position: absolute;
+            top: -18px;
+            left: -18px;
+            right: -18px;
+            bottom: -18px;
+            border-radius: 50%;
+            background: linear-gradient(45deg,
+                #FFD54F, #FF9800, #FFEB3B, #4CAF50,
+                #FFD54F, #FF9800);
+            background-size: 300% 300%;
+            filter: blur(10px);
+            opacity: 0.9;
+            z-index: -1;
+            pointer-events: none;
+            animation: hintAura 1.4s linear infinite, hintPulse 1.1s ease-in-out infinite;
+        }
+
+        .item.hint-target:not(.dragging)::after {
+            content: '👉';
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 34px;
+            z-index: 5;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+            animation: hintFinger 0.9s ease-in-out infinite;
+        }
+
+        .item.animal.hint-target:not(.dragging) {
+            animation: hintBob 1.1s ease-in-out infinite;
+        }
+
+        .item.object.hint-target {
+            background: rgba(255, 253, 231, 0.98);
+            box-shadow: 0 0 0 4px #FF9800, 0 8px 24px rgba(255, 152, 0, 0.45);
+        }
+
+        .item.hint-target .hint-badge {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #FF9800;
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+            z-index: 6;
+            pointer-events: none;
+            animation: hintBadgePop 1.1s ease-in-out infinite;
+        }
+
+        @keyframes hintAura {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        @keyframes hintPulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.85;
+            }
+            50% {
+                transform: scale(1.12);
+                opacity: 1;
+            }
+        }
+
+        @keyframes hintBob {
+            0%, 100% { transform: translateY(0) scale(1.1); }
+            50% { transform: translateY(-10px) scale(1.16); }
+        }
+
+        @keyframes hintFinger {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(8px); }
+        }
+
+        @keyframes hintBadgePop {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.08); }
+        }
+
         @keyframes rainbowGlow {
             0% { background-position: 0% 50%; }
             100% { background-position: 400% 50%; }
@@ -279,50 +373,79 @@
             max-width: 90vw;
         }
 
-        .review-pair {
+        .review-stage {
+            position: relative;
+            width: 280px;
+            height: 180px;
+            margin: 0 auto 14px;
+            overflow: visible;
+        }
+
+        .review-sprite {
+            position: absolute;
+            width: 120px;
+            height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 18px;
-            margin-bottom: 18px;
-        }
-
-        .review-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            min-width: 120px;
-        }
-
-        .review-item img,
-        .review-item .emoji {
-            width: 120px;
-            height: 120px;
-            object-fit: contain;
             filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
-            animation: reviewPop 0.5s ease-out;
         }
 
-        .review-item .emoji {
-            font-size: 90px;
-            line-height: 120px;
-            width: auto;
-            height: auto;
+        .review-sprite img,
+        .review-sprite .emoji {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
         }
 
-        .review-item .name {
-            font-size: 22px;
+        .review-sprite .emoji {
+            font-size: 84px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .review-animal-sprite {
+            left: 18px;
+            top: 30px;
+            z-index: 1;
+        }
+
+        .review-object-sprite {
+            left: 150px;
+            top: 36px;
+            z-index: 2;
+            width: 88px;
+            height: 88px;
+        }
+
+        .review-stage.animating .review-animal-sprite {
+            animation: animalHappy 1.6s ease-in-out infinite;
+        }
+
+        .review-stage.animating.action-drink .review-object-sprite {
+            animation: objectDrink 2.2s ease-in-out infinite;
+        }
+
+        .review-stage.animating.action-eat .review-object-sprite {
+            animation: objectEat 2.2s ease-in-out infinite;
+        }
+
+        .review-stage.animating.action-play .review-object-sprite {
+            animation: objectPlay 2.2s ease-in-out infinite;
+        }
+
+        .review-names {
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            margin-bottom: 14px;
+            font-size: 20px;
             font-weight: bold;
             text-transform: capitalize;
             color: #333;
-        }
-
-        .review-plus {
-            font-size: 40px;
-            font-weight: bold;
-            color: #4CAF50;
-            animation: reviewPop 0.5s ease-out 0.15s both;
         }
 
         #review-phrase {
@@ -353,9 +476,45 @@
             background: #45a049;
         }
 
-        @keyframes reviewPop {
-            0% { transform: scale(0.4); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        #review-continue-btn:disabled {
+            opacity: 0.55;
+            cursor: wait;
+        }
+
+        @keyframes animalHappy {
+            0%, 100% { transform: translateY(0) scale(1); }
+            20% { transform: translateY(-6px) scale(1.04); }
+            40% { transform: translateY(0) scale(1); }
+            60% { transform: translateY(-8px) scale(1.06); }
+            80% { transform: translateY(-2px) scale(1.02); }
+        }
+
+        /* Nesne yana gelir, hafif eğilir — ağız hedefi yok */
+        @keyframes objectDrink {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+            25% { transform: translate(-70px, 8px) rotate(-18deg) scale(0.95); }
+            40% { transform: translate(-78px, 4px) rotate(-28deg) scale(0.92); }
+            55% { transform: translate(-72px, 10px) rotate(-16deg) scale(0.95); }
+            70% { transform: translate(-80px, 2px) rotate(-30deg) scale(0.9); }
+            100% { transform: translate(-74px, 8px) rotate(-20deg) scale(0.94); }
+        }
+
+        @keyframes objectEat {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            30% { transform: translate(-68px, 6px) scale(0.9) rotate(-8deg); }
+            42% { transform: translate(-72px, 10px) scale(0.72) rotate(-4deg); }
+            54% { transform: translate(-70px, 6px) scale(0.88) rotate(-10deg); }
+            66% { transform: translate(-74px, 12px) scale(0.68) rotate(-2deg); }
+            100% { transform: translate(-70px, 8px) scale(0.8) rotate(-6deg); }
+        }
+
+        @keyframes objectPlay {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-40px, -28px) rotate(-20deg); }
+            40% { transform: translate(-75px, 4px) rotate(15deg); }
+            55% { transform: translate(-55px, -22px) rotate(-25deg); }
+            75% { transform: translate(-80px, 6px) rotate(18deg); }
+            100% { transform: translate(-70px, 0) rotate(0deg); }
         }
 
         .correct {
@@ -516,10 +675,13 @@
 
         <div id="review-modal">
             <div class="review-content">
-                <div class="review-pair">
-                    <div class="review-item" id="review-animal"></div>
-                    <div class="review-plus">+</div>
-                    <div class="review-item" id="review-object"></div>
+                <div class="review-stage" id="review-stage">
+                    <div class="review-sprite review-animal-sprite" id="review-animal-sprite"></div>
+                    <div class="review-sprite review-object-sprite" id="review-object-sprite"></div>
+                </div>
+                <div class="review-names">
+                    <span id="review-animal-name"></span>
+                    <span id="review-object-name"></span>
                 </div>
                 <div id="review-phrase"></div>
                 <div id="review-hint">Listen again</div>
@@ -629,6 +791,10 @@
         let selectedAnimal = null;
         let isDragging = false;
         let roundLocked = false;
+        let failAttemptCount = 0;
+        let retryInstructionTimer = null;
+        let reviewPhraseAudio = null;
+        let reviewActionAudio = null;
 
         function capitalize(word) {
             return word.charAt(0).toUpperCase() + word.slice(1);
@@ -723,6 +889,8 @@
 
         function startGame() {
             roundLocked = false;
+            failAttemptCount = 0;
+            clearRetryInstructionTimer();
             currentTarget = selectLeastPlayedPair();
             currentAnimals = shuffle([
                 currentTarget.animal,
@@ -740,6 +908,57 @@
             setTimeout(() => {
                 speakInstruction();
             }, 500);
+        }
+
+        function clearRetryInstructionTimer() {
+            if (retryInstructionTimer) {
+                clearTimeout(retryInstructionTimer);
+                retryInstructionTimer = null;
+            }
+        }
+
+        function clearHints() {
+            document.querySelectorAll('.item.hint-target').forEach(item => {
+                item.classList.remove('hint-target');
+                const badge = item.querySelector('.hint-badge');
+                if (badge) {
+                    badge.remove();
+                }
+            });
+        }
+
+        function highlightCorrectPair() {
+            clearHints();
+            if (!currentTarget) {
+                return;
+            }
+
+            const animalEl = document.querySelector('.item.animal[data-name="' + currentTarget.animal + '"]');
+            const objectEl = document.querySelector('.item.object[data-name="' + currentTarget.object + '"]');
+
+            const mark = (el, text) => {
+                if (!el) {
+                    return;
+                }
+                el.classList.add('hint-target');
+                const badge = document.createElement('div');
+                badge.className = 'hint-badge';
+                badge.textContent = text;
+                el.appendChild(badge);
+            };
+
+            mark(animalEl, 'This one!');
+            mark(objectEl, 'With this!');
+        }
+
+        function scheduleGoalReplay(delayMs) {
+            clearRetryInstructionTimer();
+            retryInstructionTimer = setTimeout(() => {
+                if (!roundLocked) {
+                    speakInstruction();
+                }
+                retryInstructionTimer = null;
+            }, delayMs);
         }
 
         function createItemElement(type, name, index) {
@@ -940,7 +1159,7 @@
             dropAnimal(selectedAnimal, touch.clientX, touch.clientY);
         });
 
-        function fillReviewItem(containerId, name, metaMap) {
+        function fillReviewSprite(containerId, name, metaMap) {
             const container = document.getElementById(containerId);
             const meta = metaMap[name];
             container.innerHTML = '';
@@ -950,30 +1169,82 @@
             img.src = meta ? meta.image : '';
             img.onerror = function() {
                 this.remove();
-                const emoji = document.createElement('div');
-                emoji.className = 'emoji';
-                emoji.textContent = meta && meta.emoji ? meta.emoji : '❓';
-                container.insertBefore(emoji, container.firstChild);
+                if (!container.querySelector('.emoji')) {
+                    const emoji = document.createElement('div');
+                    emoji.className = 'emoji';
+                    emoji.textContent = meta && meta.emoji ? meta.emoji : '❓';
+                    container.appendChild(emoji);
+                }
             };
-
-            const label = document.createElement('div');
-            label.className = 'name';
-            label.textContent = name;
-
             container.appendChild(img);
-            container.appendChild(label);
+        }
+
+        function stopReviewAudio() {
+            [reviewPhraseAudio, reviewActionAudio].forEach(audio => {
+                if (!audio) {
+                    return;
+                }
+                audio.pause();
+                audio.currentTime = 0;
+            });
+            reviewPhraseAudio = null;
+            reviewActionAudio = null;
         }
 
         function showReviewModal(pair) {
-            fillReviewItem('review-animal', pair.animal, ANIMAL_META);
-            fillReviewItem('review-object', pair.object, OBJECT_META);
+            const stage = document.getElementById('review-stage');
+            const continueBtn = document.getElementById('review-continue-btn');
+
+            stopReviewAudio();
+            fillReviewSprite('review-animal-sprite', pair.animal, ANIMAL_META);
+            fillReviewSprite('review-object-sprite', pair.object, OBJECT_META);
+            document.getElementById('review-animal-name').textContent = pair.animal;
+            document.getElementById('review-object-name').textContent = pair.object;
             document.getElementById('review-phrase').textContent = getSuccessPhrase(pair);
+
+            stage.className = 'review-stage action-' + pair.action;
+            void stage.offsetWidth;
+            stage.classList.add('animating');
+
+            continueBtn.disabled = true;
             document.getElementById('review-modal').classList.add('show');
-            speak(getSuccessSpeechPath(pair));
+
+            const actionPath = './assets/speech/' + pair.action + '.mp3';
+            reviewPhraseAudio = speak(getSuccessSpeechPath(pair));
+
+            const enableContinue = () => {
+                continueBtn.disabled = false;
+            };
+
+            const playActionSound = () => {
+                reviewActionAudio = speak(actionPath);
+                if (reviewActionAudio) {
+                    reviewActionAudio.addEventListener('ended', enableContinue, { once: true });
+                } else {
+                    enableContinue();
+                }
+            };
+
+            if (reviewPhraseAudio) {
+                reviewPhraseAudio.addEventListener('ended', playActionSound, { once: true });
+                reviewPhraseAudio.addEventListener('error', playActionSound, { once: true });
+            } else {
+                playActionSound();
+            }
+
+            // Ses yüklenemezse buton kilitli kalmasın
+            setTimeout(enableContinue, 8000);
         }
 
         function finishReviewAndCelebrate() {
+            const continueBtn = document.getElementById('review-continue-btn');
+            if (continueBtn.disabled) {
+                return;
+            }
+
+            stopReviewAudio();
             document.getElementById('review-modal').classList.remove('show');
+            document.getElementById('review-stage').classList.remove('animating');
 
             const result = document.getElementById('result');
             const resultText = document.getElementById('result-text');
@@ -997,10 +1268,13 @@
 
             if (isCorrect) {
                 roundLocked = true;
+                clearRetryInstructionTimer();
+                clearHints();
                 currentTarget.counter++;
                 saveCountersToStorage();
                 showReviewModal(currentTarget);
             } else {
+                failAttemptCount++;
                 resultText.textContent = '😊 Tekrar dene!';
                 resultText.className = 'incorrect';
                 nextBtn.style.display = 'none';
@@ -1008,9 +1282,16 @@
                 resetAnimalPosition(animalEl);
                 result.classList.add('show');
 
+                const showHint = failAttemptCount >= 3;
+
                 setTimeout(() => {
                     result.classList.remove('show');
-                }, 1200);
+                    if (showHint) {
+                        highlightCorrectPair();
+                    }
+                    // Modal kapandıktan biraz sonra amaç sesini tekrar çal
+                    scheduleGoalReplay(700);
+                }, 1400);
             }
         }
 

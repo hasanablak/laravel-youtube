@@ -76,6 +76,23 @@ PAIRS = [
 # Tıklanınca çalınacak tek kelime sesleri: Girl! / Apple!
 WORD_NAMES = sorted({animal for animal, _, _ in PAIRS} | {obj for _, _, obj in PAIRS})
 
+# Doğru eşleşme animasyonu için efekt sesleri (~3 sn)
+# Not: sound_generation izni yoksa TTS onomatopoeia kullanılır
+ACTION_SFX = {
+    "eat": {
+        "sfx_prompt": "Cute cartoon animal happily chewing and eating food, soft munch munch bites, playful kids game sound effect, no music, no speech",
+        "tts_fallback": "Yum yum yum! Munch munch!",
+    },
+    "drink": {
+        "sfx_prompt": "Cute cartoon animal sipping and gulping a drink, soft liquid slurp sounds, playful kids game sound effect, no music, no speech",
+        "tts_fallback": "Slurp slurp! Glug glug!",
+    },
+    "play": {
+        "sfx_prompt": "Cute cartoon toy bouncing and playful happy game sounds, light bouncy impacts, kids game sound effect, no music, no speech",
+        "tts_fallback": "Boing boing! Yay!",
+    },
+}
+
 # Varsayılan: George (İngilizce çocuk oyunu için net)
 DEFAULT_VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"
 DEFAULT_MODEL = "eleven_multilingual_v2"
@@ -176,6 +193,24 @@ def synthesize(
     return response.content
 
 
+def synthesize_sfx(api_key: str, prompt: str, duration_seconds: float = 3.0) -> bytes:
+    url = f"{API_BASE}/sound-generation"
+    payload = {
+        "text": prompt,
+        "duration_seconds": duration_seconds,
+        "prompt_influence": 0.45,
+    }
+    headers = {
+        "xi-api-key": api_key,
+        "Content-Type": "application/json",
+        "Accept": "audio/mpeg",
+    }
+    response = requests.post(url, json=payload, headers=headers, timeout=120)
+    if response.status_code != 200:
+        raise RuntimeError(f"HTTP {response.status_code}: {response.text[:500]}")
+    return response.content
+
+
 def generate_all(
     api_key: str,
     voice_id: str,
@@ -185,6 +220,7 @@ def generate_all(
     words_only: bool,
     phrases_only: bool,
     success_only: bool,
+    sfx_only: bool,
 ) -> None:
     SPEECH_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -192,24 +228,37 @@ def generate_all(
     skipped = 0
     failed = 0
 
-    jobs: list[tuple[str, Path]] = []
+    jobs: list[tuple[str, Path, str]] = []
+    # jobs: (label_or_prompt, path, kind) where kind is "tts" | "sfx"
 
-    if success_only:
+    if sfx_only:
+        for action, meta in ACTION_SFX.items():
+            jobs.append((meta["sfx_prompt"], SPEECH_DIR / f"{action}.mp3", "sfx", meta["tts_fallback"]))
+    elif success_only:
         for animal, action, obj in PAIRS:
             jobs.append(
                 (
                     success_phrase_for(animal, action, obj),
                     SPEECH_DIR / success_filename_for(animal, action, obj),
+                    "tts",
+                    None,
                 )
             )
     else:
         if not words_only:
             for animal, action, obj in PAIRS:
-                jobs.append((phrase_for(animal, action, obj), SPEECH_DIR / filename_for(animal, action, obj)))
+                jobs.append(
+                    (
+                        phrase_for(animal, action, obj),
+                        SPEECH_DIR / filename_for(animal, action, obj),
+                        "tts",
+                        None,
+                    )
+                )
 
         if not phrases_only:
             for name in WORD_NAMES:
-                jobs.append((word_phrase(name), SPEECH_DIR / word_filename(name)))
+                jobs.append((word_phrase(name), SPEECH_DIR / word_filename(name), "tts", None))
 
         if not words_only and not phrases_only:
             for animal, action, obj in PAIRS:
@@ -217,23 +266,38 @@ def generate_all(
                     (
                         success_phrase_for(animal, action, obj),
                         SPEECH_DIR / success_filename_for(animal, action, obj),
+                        "tts",
+                        None,
                     )
                 )
+            for action, meta in ACTION_SFX.items():
+                jobs.append((meta["sfx_prompt"], SPEECH_DIR / f"{action}.mp3", "sfx", meta["tts_fallback"]))
 
     print(f"Çıktı klasörü: {SPEECH_DIR}")
     print(f"Voice: {voice_id}")
     print(f"Model: {model_id}")
     print(f"Toplam dosya: {len(jobs)}\n")
 
-    for text, out_path in jobs:
+    for text, out_path, kind, tts_fallback in jobs:
         if out_path.exists() and not force:
             print(f"[skip] {out_path.name}")
             skipped += 1
             continue
 
-        print(f"[gen ] {out_path.name}  <-  \"{text}\"")
+        preview = text if len(text) < 70 else text[:67] + "..."
+        print(f"[gen ] {out_path.name}  <-  \"{preview}\" ({kind})")
         try:
-            audio = synthesize(api_key, voice_id, text, model_id)
+            if kind == "sfx":
+                try:
+                    audio = synthesize_sfx(api_key, text, duration_seconds=3.0)
+                except Exception as sfx_error:
+                    if not tts_fallback:
+                        raise
+                    print(f"  SFX API yok/hata, TTS fallback: {sfx_error}")
+                    print(f"  [tts ] {out_path.name}  <-  \"{tts_fallback}\"")
+                    audio = synthesize(api_key, voice_id, tts_fallback, model_id)
+            else:
+                audio = synthesize(api_key, voice_id, text, model_id)
             out_path.write_bytes(audio)
             created += 1
         except Exception as exc:
@@ -292,6 +356,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Sadece doğru eşleşme cümlelerini üret (now eating/drinking/playing)",
     )
+    parser.add_argument(
+        "--sfx-only",
+        action="store_true",
+        help="Sadece eat/drink/play efekt seslerini üret",
+    )
     return parser.parse_args()
 
 
@@ -312,6 +381,7 @@ def main() -> None:
         words_only=args.words_only,
         phrases_only=args.phrases_only,
         success_only=args.success_only,
+        sfx_only=args.sfx_only,
     )
 
 
