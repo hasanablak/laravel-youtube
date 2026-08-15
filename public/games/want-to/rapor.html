@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Want To Raporu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 55%, #FFE082 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 28px 20px 60px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        header h1 {
+            font-size: 34px;
+            color: #1f3b5c;
+            text-shadow: 0 2px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        header p {
+            margin-top: 6px;
+            color: #35506d;
+            font-size: 16px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #F44336;
+            color: white;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            border-radius: 20px;
+            padding: 18px 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .card .label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .card .value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2d5a3d;
+        }
+
+        .card.highlight .value {
+            color: #4A90E2;
+        }
+
+        .progress-wrap {
+            margin-bottom: 28px;
+        }
+
+        .progress-head {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #1f3b5c;
+        }
+
+        .progress-bar {
+            height: 18px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 999px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, #4CAF50, #81C784);
+            border-radius: 999px;
+            transition: width 0.4s ease;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin: 8px 0 16px;
+            color: #1f3b5c;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+        }
+
+        .pair-card {
+            background: rgba(255, 255, 255, 0.94);
+            border-radius: 18px;
+            padding: 14px;
+            text-align: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+        }
+
+        .pair-card.unplayed {
+            opacity: 0.72;
+        }
+
+        .pair-visuals {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            min-height: 84px;
+        }
+
+        .pair-visuals img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .pair-visuals .emoji {
+            font-size: 48px;
+            line-height: 1;
+        }
+
+        .pair-visuals .plus {
+            font-size: 22px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .pair-card h3 {
+            font-size: 15px;
+            line-height: 1.35;
+            margin-bottom: 6px;
+            text-transform: none;
+        }
+
+        .pair-card .tr {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .action-tag {
+            display: inline-block;
+            margin-bottom: 8px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .action-tag.eat {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .action-tag.drink {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+
+        .action-tag.play {
+            background: #F3E5F5;
+            color: #7B1FA2;
+        }
+
+        .badge {
+            display: inline-block;
+            min-width: 42px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #E8F5E9;
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        .badge.zero {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty h2 {
+            margin-bottom: 10px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .chip {
+            border: none;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 14px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #35506d;
+        }
+
+        .chip.active {
+            background: #4A90E2;
+            color: white;
+        }
+
+        @media (max-width: 640px) {
+            header h1 {
+                font-size: 26px;
+            }
+
+            .card .value {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <div>
+                <h1>Want To Raporu</h1>
+                <p>localStorage'daki eşleşme verilerine göre ilerleme özeti</p>
+            </div>
+            <div class="actions">
+                <a class="btn btn-primary" href="./index.html">Oyuna Dön</a>
+                <button class="btn btn-danger" id="reset-btn" type="button">Verileri Sıfırla</button>
+            </div>
+        </header>
+
+        <section class="summary">
+            <div class="card">
+                <div class="label">Toplam doğru eşleşme</div>
+                <div class="value" id="total-success">0</div>
+            </div>
+            <div class="card highlight">
+                <div class="label">Öğrenilen görev</div>
+                <div class="value" id="learned-count">0</div>
+            </div>
+            <div class="card">
+                <div class="label">Henüz oynanmayan</div>
+                <div class="value" id="unplayed-count">0</div>
+            </div>
+            <div class="card">
+                <div class="label">En çok oynanan</div>
+                <div class="value" id="top-pair" style="font-size: 18px;">-</div>
+            </div>
+        </section>
+
+        <section class="progress-wrap card">
+            <div class="progress-head">
+                <span>Genel ilerleme</span>
+                <span id="progress-text">0 / 0</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </section>
+
+        <h2 class="section-title">Görev detayları</h2>
+        <div class="filters">
+            <button class="chip active" data-filter="all" type="button">Tümü</button>
+            <button class="chip" data-filter="played" type="button">Oynananlar</button>
+            <button class="chip" data-filter="unplayed" type="button">Oynanmayanlar</button>
+            <button class="chip" data-filter="eat" type="button">Eat</button>
+            <button class="chip" data-filter="drink" type="button">Drink</button>
+            <button class="chip" data-filter="play" type="button">Play</button>
+        </div>
+        <div class="grid" id="pairs-grid"></div>
+        <div class="empty" id="empty-state" hidden>
+            <h2>Henüz kayıtlı veri yok</h2>
+            <p>Oyunu oynadıktan sonra doğru eşleşmeler burada görünecek.</p>
+        </div>
+    </div>
+
+    <script>
+        const ANIMAL_META = {
+            cow: { turkish: 'İnek', image: '../karsiya-gecirme/assets/images/cow.png', emoji: '🐄' },
+            dog: { turkish: 'Köpek', image: '../karsiya-gecirme/assets/images/dog.png', emoji: '🐶' },
+            bird: { turkish: 'Kuş', image: '../karsiya-gecirme/assets/images/bird.png', emoji: '🐦' },
+            cat: { turkish: 'Kedi', image: '../karsiya-gecirme/assets/images/cat.png', emoji: '🐱' },
+            horse: { turkish: 'At', image: '../karsiya-gecirme/assets/images/horse.png', emoji: '🐴' },
+            rabbit: { turkish: 'Tavşan', image: '../karsiya-gecirme/assets/images/rabbit.png', emoji: '🐰' },
+            monkey: { turkish: 'Maymun', image: '../karsiya-gecirme/assets/images/monkey.png', emoji: '🐵' },
+            bear: { turkish: 'Ayı', image: '../karsiya-gecirme/assets/images/bear.gif', emoji: '🐻' },
+            squirrel: { turkish: 'Sincap', image: '../karsiya-gecirme/assets/images/squirrel.png', emoji: '🐿️' },
+            chicken: { turkish: 'Tavuk', image: '../karsiya-gecirme/assets/images/chicken.png', emoji: '🐔' },
+            elephant: { turkish: 'Fil', image: '../karsiya-gecirme/assets/images/elephant.png', emoji: '🐘' },
+            giraffe: { turkish: 'Zürafa', image: '../karsiya-gecirme/assets/images/giraffe.png', emoji: '🦒' },
+            sheep: { turkish: 'Koyun', image: '../karsiya-gecirme/assets/images/sheep.png', emoji: '🐑' },
+            lion: { turkish: 'Aslan', image: '../karsiya-gecirme/assets/images/lion.png', emoji: '🦁' },
+            hamster: { turkish: 'Hamster', image: '../karsiya-gecirme/assets/images/hamster.png', emoji: '🐹' },
+            frog: { turkish: 'Kurbağa', image: '../karsiya-gecirme/assets/images/frog.png', emoji: '🐸' },
+            parrot: { turkish: 'Papağan', image: '../karsiya-gecirme/assets/images/parrot-1.png', emoji: '🦜' },
+            bee: { turkish: 'Arı', image: '../karsiya-gecirme/assets/images/bee.png', emoji: '🐝' },
+            girl: { turkish: 'Kız', image: '../karsiya-gecirme/assets/images/girl.gif', emoji: '👧' }
+        };
+
+        const OBJECT_META = {
+            apple: { turkish: 'Elma', image: './assets/images/apple.png', emoji: '🍎' },
+            meat: { turkish: 'Et', image: './assets/images/meat.png', emoji: '🥩' },
+            ball: { turkish: 'Top', image: './assets/images/ball.png', emoji: '⚽' },
+            water: { turkish: 'Su', image: './assets/images/water.png', emoji: '💧' },
+            milk: { turkish: 'Süt', image: './assets/images/milk.png', emoji: '🥛' },
+            juice: { turkish: 'Meyve suyu', image: './assets/images/juice.png', emoji: '🧃' },
+            carrot: { turkish: 'Havuç', image: './assets/images/carrot.png', emoji: '🥕' },
+            banana: { turkish: 'Muz', image: './assets/images/banana.png', emoji: '🍌' },
+            honey: { turkish: 'Bal', image: './assets/images/honey.png', emoji: '🍯' },
+            nut: { turkish: 'Fındık', image: './assets/images/nut.png', emoji: '🥜' },
+            corn: { turkish: 'Mısır', image: './assets/images/corn.png', emoji: '🌽' },
+            leaf: { turkish: 'Yaprak', image: './assets/images/leaf.png', emoji: '🍃' },
+            grass: { turkish: 'Çimen', image: './assets/images/grass.png', emoji: '🌿' },
+            fly: { turkish: 'Sinek', image: './assets/images/fly.png', emoji: '🪰' },
+            flower: { turkish: 'Çiçek', image: './assets/images/flower.png', emoji: '🌸' },
+            stick: { turkish: 'Çubuk', image: './assets/images/stick.png', emoji: '🪵' },
+            rope: { turkish: 'Ip', image: './assets/images/rope.png', emoji: '🪢' },
+            bone: { turkish: 'Kemik', image: './assets/images/bone.png', emoji: '🦴' },
+            doll: { turkish: 'Bebek', image: './assets/images/doll.png', emoji: '🪆' },
+            car: { turkish: 'Araba', image: './assets/images/car.png', emoji: '🚗' }
+        };
+
+        const pairs = [
+            { id: 'cow-eat-apple', animal: 'cow', action: 'eat', object: 'apple' },
+            { id: 'dog-eat-meat', animal: 'dog', action: 'eat', object: 'meat' },
+            { id: 'horse-eat-carrot', animal: 'horse', action: 'eat', object: 'carrot' },
+            { id: 'rabbit-eat-carrot', animal: 'rabbit', action: 'eat', object: 'carrot' },
+            { id: 'monkey-eat-banana', animal: 'monkey', action: 'eat', object: 'banana' },
+            { id: 'bear-eat-honey', animal: 'bear', action: 'eat', object: 'honey' },
+            { id: 'squirrel-eat-nut', animal: 'squirrel', action: 'eat', object: 'nut' },
+            { id: 'chicken-eat-corn', animal: 'chicken', action: 'eat', object: 'corn' },
+            { id: 'giraffe-eat-leaf', animal: 'giraffe', action: 'eat', object: 'leaf' },
+            { id: 'sheep-eat-grass', animal: 'sheep', action: 'eat', object: 'grass' },
+            { id: 'lion-eat-meat', animal: 'lion', action: 'eat', object: 'meat' },
+            { id: 'hamster-eat-carrot', animal: 'hamster', action: 'eat', object: 'carrot' },
+            { id: 'frog-eat-fly', animal: 'frog', action: 'eat', object: 'fly' },
+            { id: 'parrot-eat-apple', animal: 'parrot', action: 'eat', object: 'apple' },
+            { id: 'bee-eat-flower', animal: 'bee', action: 'eat', object: 'flower' },
+            { id: 'bird-drink-water', animal: 'bird', action: 'drink', object: 'water' },
+            { id: 'cat-drink-milk', animal: 'cat', action: 'drink', object: 'milk' },
+            { id: 'elephant-drink-water', animal: 'elephant', action: 'drink', object: 'water' },
+            { id: 'dog-drink-water', animal: 'dog', action: 'drink', object: 'water' },
+            { id: 'horse-drink-water', animal: 'horse', action: 'drink', object: 'water' },
+            { id: 'cow-drink-water', animal: 'cow', action: 'drink', object: 'water' },
+            { id: 'monkey-drink-juice', animal: 'monkey', action: 'drink', object: 'juice' },
+            { id: 'girl-drink-milk', animal: 'girl', action: 'drink', object: 'milk' },
+            { id: 'dog-play-ball', animal: 'dog', action: 'play', object: 'ball' },
+            { id: 'girl-play-ball', animal: 'girl', action: 'play', object: 'ball' },
+            { id: 'cat-play-ball', animal: 'cat', action: 'play', object: 'ball' },
+            { id: 'monkey-play-ball', animal: 'monkey', action: 'play', object: 'ball' },
+            { id: 'dog-play-stick', animal: 'dog', action: 'play', object: 'stick' },
+            { id: 'cat-play-rope', animal: 'cat', action: 'play', object: 'rope' },
+            { id: 'dog-play-bone', animal: 'dog', action: 'play', object: 'bone' },
+            { id: 'girl-play-doll', animal: 'girl', action: 'play', object: 'doll' },
+            { id: 'girl-play-car', animal: 'girl', action: 'play', object: 'car' }
+        ];
+
+        const STORAGE_KEY = 'wantToPairCounters';
+        let currentFilter = 'all';
+        let reportRows = [];
+
+        function capitalize(word) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }
+
+        function getPhrase(pair) {
+            return capitalize(pair.animal) + ' want to ' + pair.action + ' ' + pair.object;
+        }
+
+        function mediaHtml(meta) {
+            if (!meta) {
+                return '<span class="emoji">❓</span>';
+            }
+            return `<img src="${meta.image}" alt="${meta.turkish}" onerror="this.outerHTML='<span class=\\'emoji\\'>${meta.emoji}</span>'">`;
+        }
+
+        function readStorageList(key) {
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) {
+                    return [];
+                }
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                console.error(key + ' okunamadı:', error);
+                return [];
+            }
+        }
+
+        function getCounterMap() {
+            const map = {};
+            readStorageList(STORAGE_KEY).forEach(item => {
+                if (!item || !item.id) {
+                    return;
+                }
+                map[item.id] = Number(item.counter) || 0;
+            });
+            return map;
+        }
+
+        function buildReport() {
+            const counters = getCounterMap();
+
+            reportRows = pairs.map(pair => {
+                const animal = ANIMAL_META[pair.animal];
+                const object = OBJECT_META[pair.object];
+                return {
+                    ...pair,
+                    phrase: getPhrase(pair),
+                    animalMeta: animal,
+                    objectMeta: object,
+                    turkish: (animal ? animal.turkish : pair.animal) + ' + ' + (object ? object.turkish : pair.object),
+                    counter: counters[pair.id] || 0
+                };
+            }).sort((a, b) => b.counter - a.counter || a.phrase.localeCompare(b.phrase));
+
+            const totalSuccess = reportRows.reduce((sum, row) => sum + row.counter, 0);
+            const learned = reportRows.filter(row => row.counter > 0);
+            const unplayed = reportRows.filter(row => row.counter === 0);
+            const top = learned[0];
+
+            document.getElementById('total-success').textContent = totalSuccess;
+            document.getElementById('learned-count').textContent = learned.length;
+            document.getElementById('unplayed-count').textContent = unplayed.length;
+            document.getElementById('top-pair').textContent = top ? top.phrase : '-';
+            document.getElementById('progress-text').textContent = learned.length + ' / ' + reportRows.length;
+            document.getElementById('progress-fill').style.width = (learned.length / reportRows.length * 100) + '%';
+
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('pairs-grid');
+            const empty = document.getElementById('empty-state');
+            const filtered = reportRows.filter(row => {
+                if (currentFilter === 'played') {
+                    return row.counter > 0;
+                }
+                if (currentFilter === 'unplayed') {
+                    return row.counter === 0;
+                }
+                if (currentFilter === 'eat' || currentFilter === 'drink' || currentFilter === 'play') {
+                    return row.action === currentFilter;
+                }
+                return true;
+            });
+
+            grid.innerHTML = '';
+
+            if (!filtered.length) {
+                empty.hidden = false;
+                return;
+            }
+
+            empty.hidden = true;
+            filtered.forEach(row => {
+                const card = document.createElement('article');
+                card.className = 'pair-card' + (row.counter === 0 ? ' unplayed' : '');
+                card.innerHTML = `
+                    <div class="pair-visuals">
+                        ${mediaHtml(row.animalMeta)}
+                        <span class="plus">+</span>
+                        ${mediaHtml(row.objectMeta)}
+                    </div>
+                    <span class="action-tag ${row.action}">${row.action}</span>
+                    <h3>${row.phrase}</h3>
+                    <div class="tr">${row.turkish}</div>
+                    <span class="badge ${row.counter === 0 ? 'zero' : ''}">${row.counter} kez</span>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.chip').forEach(item => item.classList.remove('active'));
+                chip.classList.add('active');
+                currentFilter = chip.dataset.filter;
+                renderGrid();
+            });
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            const confirmed = confirm('Kayıtlı oyun verileri silinsin mi? Bu işlem geri alınamaz.');
+            if (!confirmed) {
+                return;
+            }
+            localStorage.removeItem(STORAGE_KEY);
+            buildReport();
+        });
+
+        buildReport();
+    </script>
+</body>
+</html>

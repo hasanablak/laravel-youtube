@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Want To - Eşleştirme</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(to bottom, #87CEEB 0%, #98D8E8 100%);
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #instruction {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px 40px;
+            border-radius: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .ground {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to bottom, #90EE90 0%, #7BC87B 100%);
+        }
+
+        .ground-left {
+            left: 0;
+            border-right: 4px dashed rgba(255, 255, 255, 0.5);
+        }
+
+        .ground-right {
+            right: 0;
+            background: linear-gradient(to bottom, #FFE082 0%, #FFD54F 100%);
+        }
+
+        .grass {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background: repeating-linear-gradient(
+                90deg,
+                #228B22 0px,
+                #228B22 5px,
+                #32CD32 5px,
+                #32CD32 10px
+            );
+        }
+
+        .ground-right .grass {
+            background: repeating-linear-gradient(
+                90deg,
+                #F9A825 0px,
+                #F9A825 5px,
+                #FBC02D 5px,
+                #FBC02D 10px
+            );
+        }
+
+        .side-label {
+            position: absolute;
+            top: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.85);
+            padding: 8px 18px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #35506d;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        #animals-container,
+        #objects-container {
+            position: absolute;
+            top: 0;
+            height: 100vh;
+            width: 50%;
+            z-index: 10;
+        }
+
+        #animals-container {
+            left: 0;
+        }
+
+        #objects-container {
+            right: 0;
+        }
+
+        .item {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+            z-index: 10;
+        }
+
+        .item.animal {
+            cursor: grab;
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        .item.animal:hover {
+            transform: scale(1.15);
+            filter: brightness(1.1);
+        }
+
+        .item.animal.dragging {
+            cursor: grabbing;
+            z-index: 1000;
+            transition: none;
+            transform: scale(1.3);
+            animation: bounce 0.5s ease-in-out infinite;
+        }
+
+        .item.animal.dragging::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: linear-gradient(45deg,
+                #ff0000, #ff7f00, #ffff00, #00ff00,
+                #0000ff, #4b0082, #9400d3, #ff0000);
+            background-size: 400% 400%;
+            border-radius: 50%;
+            filter: blur(15px);
+            opacity: 0.7;
+            z-index: -1;
+            animation: rainbowGlow 1.5s linear infinite;
+        }
+
+        .item.animal.dragging::after {
+            content: '✨';
+            position: absolute;
+            font-size: 40px;
+            top: -20px;
+            right: -20px;
+            animation: sparkle 1s ease-in-out infinite;
+        }
+
+        .item.object {
+            background: rgba(255, 255, 255, 0.55);
+            border-radius: 24px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .item.object.drop-target {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 0 4px #4CAF50, 0 8px 20px rgba(0, 0, 0, 0.2);
+            transform: scale(1.08);
+        }
+
+        @keyframes rainbowGlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 400% 50%; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1.3) translateY(0); }
+            50% { transform: scale(1.3) translateY(-10px); }
+        }
+
+        @keyframes sparkle {
+            0%, 100% {
+                opacity: 1;
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: rotate(180deg) scale(1.5);
+            }
+        }
+
+        .item img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            pointer-events: none;
+        }
+
+        .item .emoji-fallback {
+            font-size: 64px;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .item .item-label {
+            margin-top: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            text-transform: capitalize;
+            pointer-events: none;
+        }
+
+        #result {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 40px 60px;
+            border-radius: 30px;
+            font-size: 48px;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 200;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        #result.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        #review-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.65);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 250;
+        }
+
+        #review-modal.show {
+            display: flex;
+        }
+
+        .review-content {
+            background: white;
+            padding: 36px 48px;
+            border-radius: 28px;
+            text-align: center;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3);
+            animation: modalPop 0.45s ease-out;
+            max-width: 90vw;
+        }
+
+        .review-pair {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .review-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+        }
+
+        .review-item img,
+        .review-item .emoji {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.2));
+            animation: reviewPop 0.5s ease-out;
+        }
+
+        .review-item .emoji {
+            font-size: 90px;
+            line-height: 120px;
+            width: auto;
+            height: auto;
+        }
+
+        .review-item .name {
+            font-size: 22px;
+            font-weight: bold;
+            text-transform: capitalize;
+            color: #333;
+        }
+
+        .review-plus {
+            font-size: 40px;
+            font-weight: bold;
+            color: #4CAF50;
+            animation: reviewPop 0.5s ease-out 0.15s both;
+        }
+
+        #review-phrase {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1f3b5c;
+            margin-bottom: 8px;
+        }
+
+        #review-hint {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 18px;
+        }
+
+        #review-continue-btn {
+            padding: 14px 36px;
+            font-size: 22px;
+            font-weight: bold;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+        }
+
+        #review-continue-btn:hover {
+            background: #45a049;
+        }
+
+        @keyframes reviewPop {
+            0% { transform: scale(0.4); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .correct {
+            color: #4CAF50;
+        }
+
+        .incorrect {
+            color: #F44336;
+        }
+
+        #next-btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 24px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #next-btn:hover {
+            background: #45a049;
+        }
+
+        #speaker-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #FF6B6B;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 101;
+        }
+
+        #speaker-btn:hover {
+            background: #FF5252;
+            transform: scale(1.1);
+        }
+
+        #start-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #start-modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 80px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalPop 0.5s ease-out;
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h1 {
+            color: white;
+            font-size: 42px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 22px;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        #start-game-btn {
+            padding: 20px 60px;
+            font-size: 32px;
+            font-weight: bold;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s;
+        }
+
+        #start-game-btn:hover {
+            background: #45a049;
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        #start-game-btn:active {
+            transform: translateY(-2px);
+        }
+
+        #report-link {
+            display: inline-block;
+            margin-top: 18px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        #report-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="start-modal">
+        <div class="modal-content">
+            <h1>Want To! 🍎⚽</h1>
+            <p>Söylenen hayvanı doğru nesneye sürükle<br>ve İngilizce cümleleri öğren!</p>
+            <button id="start-game-btn" onclick="startGameFromModal()">Oyunu Başlat</button>
+            <br>
+            <a id="report-link" href="./rapor.html">Raporu Gör</a>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div id="instruction" style="opacity: 0.4;">
+            Listen: <span id="target-phrase">...</span>
+        </div>
+        <button id="speaker-btn" type="button" onclick="speakInstruction()">🔊</button>
+
+        <div class="ground ground-left">
+            <div class="side-label">Animals</div>
+            <div class="grass"></div>
+        </div>
+
+        <div class="ground ground-right">
+            <div class="side-label">Objects</div>
+            <div class="grass"></div>
+        </div>
+
+        <div id="animals-container"></div>
+        <div id="objects-container"></div>
+
+        <div id="review-modal">
+            <div class="review-content">
+                <div class="review-pair">
+                    <div class="review-item" id="review-animal"></div>
+                    <div class="review-plus">+</div>
+                    <div class="review-item" id="review-object"></div>
+                </div>
+                <div id="review-phrase"></div>
+                <div id="review-hint">Listen again</div>
+                <button id="review-continue-btn" type="button" onclick="finishReviewAndCelebrate()">Harika!</button>
+            </div>
+        </div>
+
+        <div id="result">
+            <div id="result-text"></div>
+            <button id="next-btn" type="button" onclick="nextRound()">Devam Et</button>
+        </div>
+    </div>
+
+    <script>
+        const ANIMAL_META = {
+            cow: { turkish: 'İnek', image: '../karsiya-gecirme/assets/images/cow.png', emoji: '🐄' },
+            dog: { turkish: 'Köpek', image: '../karsiya-gecirme/assets/images/dog.png', emoji: '🐶' },
+            bird: { turkish: 'Kuş', image: '../karsiya-gecirme/assets/images/bird.png', emoji: '🐦' },
+            cat: { turkish: 'Kedi', image: '../karsiya-gecirme/assets/images/cat.png', emoji: '🐱' },
+            horse: { turkish: 'At', image: '../karsiya-gecirme/assets/images/horse.png', emoji: '🐴' },
+            rabbit: { turkish: 'Tavşan', image: '../karsiya-gecirme/assets/images/rabbit.png', emoji: '🐰' },
+            monkey: { turkish: 'Maymun', image: '../karsiya-gecirme/assets/images/monkey.png', emoji: '🐵' },
+            bear: { turkish: 'Ayı', image: '../karsiya-gecirme/assets/images/bear.gif', emoji: '🐻' },
+            squirrel: { turkish: 'Sincap', image: '../karsiya-gecirme/assets/images/squirrel.png', emoji: '🐿️' },
+            chicken: { turkish: 'Tavuk', image: '../karsiya-gecirme/assets/images/chicken.png', emoji: '🐔' },
+            elephant: { turkish: 'Fil', image: '../karsiya-gecirme/assets/images/elephant.png', emoji: '🐘' },
+            giraffe: { turkish: 'Zürafa', image: '../karsiya-gecirme/assets/images/giraffe.png', emoji: '🦒' },
+            sheep: { turkish: 'Koyun', image: '../karsiya-gecirme/assets/images/sheep.png', emoji: '🐑' },
+            lion: { turkish: 'Aslan', image: '../karsiya-gecirme/assets/images/lion.png', emoji: '🦁' },
+            hamster: { turkish: 'Hamster', image: '../karsiya-gecirme/assets/images/hamster.png', emoji: '🐹' },
+            frog: { turkish: 'Kurbağa', image: '../karsiya-gecirme/assets/images/frog.png', emoji: '🐸' },
+            parrot: { turkish: 'Papağan', image: '../karsiya-gecirme/assets/images/parrot-1.png', emoji: '🦜' },
+            bee: { turkish: 'Arı', image: '../karsiya-gecirme/assets/images/bee.png', emoji: '🐝' },
+            girl: { turkish: 'Kız', image: '../karsiya-gecirme/assets/images/girl.gif', emoji: '👧' }
+        };
+
+        const OBJECT_META = {
+            apple: { turkish: 'Elma', image: './assets/images/apple.png', emoji: '🍎' },
+            meat: { turkish: 'Et', image: './assets/images/meat.png', emoji: '🥩' },
+            ball: { turkish: 'Top', image: './assets/images/ball.png', emoji: '⚽' },
+            water: { turkish: 'Su', image: './assets/images/water.png', emoji: '💧' },
+            milk: { turkish: 'Süt', image: './assets/images/milk.png', emoji: '🥛' },
+            juice: { turkish: 'Meyve suyu', image: './assets/images/juice.png', emoji: '🧃' },
+            carrot: { turkish: 'Havuç', image: './assets/images/carrot.png', emoji: '🥕' },
+            banana: { turkish: 'Muz', image: './assets/images/banana.png', emoji: '🍌' },
+            honey: { turkish: 'Bal', image: './assets/images/honey.png', emoji: '🍯' },
+            nut: { turkish: 'Fındık', image: './assets/images/nut.png', emoji: '🥜' },
+            corn: { turkish: 'Mısır', image: './assets/images/corn.png', emoji: '🌽' },
+            leaf: { turkish: 'Yaprak', image: './assets/images/leaf.png', emoji: '🍃' },
+            grass: { turkish: 'Çimen', image: './assets/images/grass.png', emoji: '🌿' },
+            fly: { turkish: 'Sinek', image: './assets/images/fly.png', emoji: '🪰' },
+            flower: { turkish: 'Çiçek', image: './assets/images/flower.png', emoji: '🌸' },
+            stick: { turkish: 'Çubuk', image: './assets/images/stick.png', emoji: '🪵' },
+            rope: { turkish: 'Ip', image: './assets/images/rope.png', emoji: '🪢' },
+            bone: { turkish: 'Kemik', image: './assets/images/bone.png', emoji: '🦴' },
+            doll: { turkish: 'Bebek', image: './assets/images/doll.png', emoji: '🪆' },
+            car: { turkish: 'Araba', image: './assets/images/car.png', emoji: '🚗' }
+        };
+
+        const pairs = [
+            // eat (5+)
+            { id: 'cow-eat-apple', animal: 'cow', action: 'eat', object: 'apple', counter: 0 },
+            { id: 'dog-eat-meat', animal: 'dog', action: 'eat', object: 'meat', counter: 0 },
+            { id: 'horse-eat-carrot', animal: 'horse', action: 'eat', object: 'carrot', counter: 0 },
+            { id: 'rabbit-eat-carrot', animal: 'rabbit', action: 'eat', object: 'carrot', counter: 0 },
+            { id: 'monkey-eat-banana', animal: 'monkey', action: 'eat', object: 'banana', counter: 0 },
+            { id: 'bear-eat-honey', animal: 'bear', action: 'eat', object: 'honey', counter: 0 },
+            { id: 'squirrel-eat-nut', animal: 'squirrel', action: 'eat', object: 'nut', counter: 0 },
+            { id: 'chicken-eat-corn', animal: 'chicken', action: 'eat', object: 'corn', counter: 0 },
+            { id: 'giraffe-eat-leaf', animal: 'giraffe', action: 'eat', object: 'leaf', counter: 0 },
+            { id: 'sheep-eat-grass', animal: 'sheep', action: 'eat', object: 'grass', counter: 0 },
+            { id: 'lion-eat-meat', animal: 'lion', action: 'eat', object: 'meat', counter: 0 },
+            { id: 'hamster-eat-carrot', animal: 'hamster', action: 'eat', object: 'carrot', counter: 0 },
+            { id: 'frog-eat-fly', animal: 'frog', action: 'eat', object: 'fly', counter: 0 },
+            { id: 'parrot-eat-apple', animal: 'parrot', action: 'eat', object: 'apple', counter: 0 },
+            { id: 'bee-eat-flower', animal: 'bee', action: 'eat', object: 'flower', counter: 0 },
+
+            // drink (5+)
+            { id: 'bird-drink-water', animal: 'bird', action: 'drink', object: 'water', counter: 0 },
+            { id: 'cat-drink-milk', animal: 'cat', action: 'drink', object: 'milk', counter: 0 },
+            { id: 'elephant-drink-water', animal: 'elephant', action: 'drink', object: 'water', counter: 0 },
+            { id: 'dog-drink-water', animal: 'dog', action: 'drink', object: 'water', counter: 0 },
+            { id: 'horse-drink-water', animal: 'horse', action: 'drink', object: 'water', counter: 0 },
+            { id: 'cow-drink-water', animal: 'cow', action: 'drink', object: 'water', counter: 0 },
+            { id: 'monkey-drink-juice', animal: 'monkey', action: 'drink', object: 'juice', counter: 0 },
+            { id: 'girl-drink-milk', animal: 'girl', action: 'drink', object: 'milk', counter: 0 },
+
+            // play (5+)
+            { id: 'dog-play-ball', animal: 'dog', action: 'play', object: 'ball', counter: 0 },
+            { id: 'girl-play-ball', animal: 'girl', action: 'play', object: 'ball', counter: 0 },
+            { id: 'cat-play-ball', animal: 'cat', action: 'play', object: 'ball', counter: 0 },
+            { id: 'monkey-play-ball', animal: 'monkey', action: 'play', object: 'ball', counter: 0 },
+            { id: 'dog-play-stick', animal: 'dog', action: 'play', object: 'stick', counter: 0 },
+            { id: 'cat-play-rope', animal: 'cat', action: 'play', object: 'rope', counter: 0 },
+            { id: 'dog-play-bone', animal: 'dog', action: 'play', object: 'bone', counter: 0 },
+            { id: 'girl-play-doll', animal: 'girl', action: 'play', object: 'doll', counter: 0 },
+            { id: 'girl-play-car', animal: 'girl', action: 'play', object: 'car', counter: 0 }
+        ];
+
+        const STORAGE_KEY = 'wantToPairCounters';
+        const FEEDBACK_OK = '../karsiya-gecirme/assets/speech/harika-basardin.mp3';
+        const FEEDBACK_RETRY = '../karsiya-gecirme/assets/speech/olmadi-hadi-tekrar-deneyelim.mp3';
+
+        let currentTarget = null;
+        let currentAnimals = [];
+        let currentObjects = [];
+        let selectedAnimal = null;
+        let isDragging = false;
+        let roundLocked = false;
+
+        function capitalize(word) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }
+
+        function getPhrase(pair) {
+            const verb = pair.action === 'play' ? 'play' : pair.action;
+            return capitalize(pair.animal) + ' want to ' + verb + ' ' + pair.object;
+        }
+
+        function getSpeechPath(pair) {
+            return './assets/speech/' + pair.animal + '-want-to-' + pair.action + '-' + pair.object + '.mp3';
+        }
+
+        function getSuccessPhrase(pair) {
+            if (pair.action === 'play') {
+                return capitalize(pair.animal) + ' now playing with ' + pair.object;
+            }
+            if (pair.action === 'drink') {
+                return capitalize(pair.animal) + ' now drinking ' + pair.object;
+            }
+            return capitalize(pair.animal) + ' now eating ' + pair.object;
+        }
+
+        function getSuccessSpeechPath(pair) {
+            if (pair.action === 'play') {
+                return './assets/speech/' + pair.animal + '-now-playing-with-' + pair.object + '.mp3';
+            }
+            if (pair.action === 'drink') {
+                return './assets/speech/' + pair.animal + '-now-drinking-' + pair.object + '.mp3';
+            }
+            return './assets/speech/' + pair.animal + '-now-eating-' + pair.object + '.mp3';
+        }
+
+        function loadCountersFromStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) {
+                    return;
+                }
+                const data = JSON.parse(saved);
+                if (!Array.isArray(data)) {
+                    return;
+                }
+                pairs.forEach(pair => {
+                    const found = data.find(item => item.id === pair.id);
+                    if (found) {
+                        pair.counter = Number(found.counter) || 0;
+                    }
+                });
+            } catch (error) {
+                console.error('Counter yüklenirken hata:', error);
+            }
+        }
+
+        function saveCountersToStorage() {
+            const data = pairs
+                .filter(pair => pair.counter > 0)
+                .map(pair => ({ id: pair.id, counter: pair.counter }));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function selectLeastPlayedPair() {
+            const sorted = [...pairs].sort((a, b) => a.counter - b.counter);
+            const minCounter = sorted[0].counter;
+            const leastPlayed = sorted.filter(pair => pair.counter === minCounter);
+            return leastPlayed[Math.floor(Math.random() * leastPlayed.length)];
+        }
+
+        function uniqueAnimals() {
+            return [...new Set(pairs.map(pair => pair.animal))];
+        }
+
+        function uniqueObjects() {
+            return [...new Set(pairs.map(pair => pair.object))];
+        }
+
+        function pickDistractors(allItems, targetItem, count) {
+            const others = allItems.filter(item => item !== targetItem);
+            const selected = [];
+            while (selected.length < count && others.length > 0) {
+                const index = Math.floor(Math.random() * others.length);
+                selected.push(others[index]);
+                others.splice(index, 1);
+            }
+            return selected;
+        }
+
+        function shuffle(list) {
+            return [...list].sort(() => Math.random() - 0.5);
+        }
+
+        function startGame() {
+            roundLocked = false;
+            currentTarget = selectLeastPlayedPair();
+            currentAnimals = shuffle([
+                currentTarget.animal,
+                ...pickDistractors(uniqueAnimals(), currentTarget.animal, 2)
+            ]);
+            currentObjects = shuffle([
+                currentTarget.object,
+                ...pickDistractors(uniqueObjects(), currentTarget.object, 2)
+            ]);
+
+            document.getElementById('target-phrase').textContent = getPhrase(currentTarget);
+            document.getElementById('instruction').style.opacity = '0.4';
+            renderBoard();
+
+            setTimeout(() => {
+                speakInstruction();
+            }, 500);
+        }
+
+        function createItemElement(type, name, index) {
+            const meta = type === 'animal' ? ANIMAL_META[name] : OBJECT_META[name];
+            const div = document.createElement('div');
+            div.className = 'item ' + type;
+            div.dataset.name = name;
+            div.dataset.type = type;
+
+            const img = document.createElement('img');
+            img.alt = meta ? meta.turkish : name;
+            img.src = meta ? meta.image : '';
+            img.onerror = function() {
+                this.remove();
+                if (!div.querySelector('.emoji-fallback')) {
+                    const emoji = document.createElement('div');
+                    emoji.className = 'emoji-fallback';
+                    emoji.textContent = meta && meta.emoji ? meta.emoji : '❓';
+                    div.insertBefore(emoji, div.firstChild);
+                }
+            };
+
+            const label = document.createElement('div');
+            label.className = 'item-label';
+            label.textContent = name;
+
+            div.appendChild(img);
+            div.appendChild(label);
+
+            const yPos = 18 + (index * 26);
+            if (type === 'animal') {
+                div.style.left = '22%';
+                div.dataset.homeLeft = '22%';
+            } else {
+                div.style.left = '35%';
+                div.dataset.homeLeft = '35%';
+            }
+            div.style.top = yPos + '%';
+            div.dataset.homeTop = yPos + '%';
+
+            if (type === 'animal') {
+                div.addEventListener('click', handleAnimalClick);
+            } else {
+                div.addEventListener('click', handleObjectClick);
+            }
+
+            return div;
+        }
+
+        function getNameSpeechPath(name) {
+            return './assets/speech/' + name + '.mp3';
+        }
+
+        function playNameSound(name) {
+            speak(getNameSpeechPath(name));
+        }
+
+        function handleObjectClick(e) {
+            e.stopPropagation();
+            if (roundLocked) {
+                return;
+            }
+
+            const clickedObject = e.target.closest('.item.object');
+            if (!clickedObject) {
+                return;
+            }
+
+            if (isDragging && selectedAnimal) {
+                dropAnimal(selectedAnimal, e.clientX, e.clientY);
+                return;
+            }
+
+            playNameSound(clickedObject.dataset.name);
+        }
+
+        function renderBoard() {
+            const animalsContainer = document.getElementById('animals-container');
+            const objectsContainer = document.getElementById('objects-container');
+            animalsContainer.innerHTML = '';
+            objectsContainer.innerHTML = '';
+
+            currentAnimals.forEach((name, index) => {
+                animalsContainer.appendChild(createItemElement('animal', name, index));
+            });
+
+            currentObjects.forEach((name, index) => {
+                objectsContainer.appendChild(createItemElement('object', name, index));
+            });
+        }
+
+        function resetAnimalPosition(animal) {
+            animal.style.left = animal.dataset.homeLeft;
+            animal.style.top = animal.dataset.homeTop;
+            animal.classList.remove('dragging');
+        }
+
+        function clearDropHighlights() {
+            document.querySelectorAll('.item.object').forEach(item => {
+                item.classList.remove('drop-target');
+            });
+        }
+
+        function findObjectUnderPoint(x, y) {
+            const objects = document.querySelectorAll('.item.object');
+            for (const obj of objects) {
+                const rect = obj.getBoundingClientRect();
+                if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                    return obj;
+                }
+            }
+            return null;
+        }
+
+        function handleAnimalClick(e) {
+            e.stopPropagation();
+            if (roundLocked) {
+                return;
+            }
+
+            const clickedAnimal = e.target.closest('.item.animal');
+            if (!clickedAnimal) {
+                return;
+            }
+
+            if (selectedAnimal && selectedAnimal !== clickedAnimal) {
+                resetAnimalPosition(selectedAnimal);
+            }
+
+            if (selectedAnimal === clickedAnimal && isDragging) {
+                dropAnimal(clickedAnimal, e.clientX, e.clientY);
+                return;
+            }
+
+            selectedAnimal = clickedAnimal;
+            isDragging = true;
+            selectedAnimal.classList.add('dragging');
+            playNameSound(clickedAnimal.dataset.name);
+        }
+
+        function dropAnimal(animal, clientX, clientY) {
+            isDragging = false;
+            animal.classList.remove('dragging');
+            clearDropHighlights();
+
+            const targetObject = findObjectUnderPoint(clientX, clientY);
+            if (!targetObject) {
+                resetAnimalPosition(animal);
+                selectedAnimal = null;
+                return;
+            }
+
+            checkAnswer(animal.dataset.name, targetObject.dataset.name, animal);
+            selectedAnimal = null;
+        }
+
+        document.addEventListener('mousemove', function(e) {
+            if (!isDragging || !selectedAnimal) {
+                return;
+            }
+
+            selectedAnimal.style.left = (e.clientX - 70) + 'px';
+            selectedAnimal.style.top = (e.clientY - 70) + 'px';
+
+            clearDropHighlights();
+            const hovered = findObjectUnderPoint(e.clientX, e.clientY);
+            if (hovered) {
+                hovered.classList.add('drop-target');
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (isDragging && selectedAnimal && !e.target.closest('.item.animal')) {
+                dropAnimal(selectedAnimal, e.clientX, e.clientY);
+            }
+        });
+
+        document.addEventListener('touchmove', function(e) {
+            if (!isDragging || !selectedAnimal) {
+                return;
+            }
+            const touch = e.touches[0];
+            selectedAnimal.style.left = (touch.clientX - 70) + 'px';
+            selectedAnimal.style.top = (touch.clientY - 70) + 'px';
+
+            clearDropHighlights();
+            const hovered = findObjectUnderPoint(touch.clientX, touch.clientY);
+            if (hovered) {
+                hovered.classList.add('drop-target');
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', function(e) {
+            if (!isDragging || !selectedAnimal) {
+                return;
+            }
+            const touch = e.changedTouches[0];
+            dropAnimal(selectedAnimal, touch.clientX, touch.clientY);
+        });
+
+        function fillReviewItem(containerId, name, metaMap) {
+            const container = document.getElementById(containerId);
+            const meta = metaMap[name];
+            container.innerHTML = '';
+
+            const img = document.createElement('img');
+            img.alt = name;
+            img.src = meta ? meta.image : '';
+            img.onerror = function() {
+                this.remove();
+                const emoji = document.createElement('div');
+                emoji.className = 'emoji';
+                emoji.textContent = meta && meta.emoji ? meta.emoji : '❓';
+                container.insertBefore(emoji, container.firstChild);
+            };
+
+            const label = document.createElement('div');
+            label.className = 'name';
+            label.textContent = name;
+
+            container.appendChild(img);
+            container.appendChild(label);
+        }
+
+        function showReviewModal(pair) {
+            fillReviewItem('review-animal', pair.animal, ANIMAL_META);
+            fillReviewItem('review-object', pair.object, OBJECT_META);
+            document.getElementById('review-phrase').textContent = getSuccessPhrase(pair);
+            document.getElementById('review-modal').classList.add('show');
+            speak(getSuccessSpeechPath(pair));
+        }
+
+        function finishReviewAndCelebrate() {
+            document.getElementById('review-modal').classList.remove('show');
+
+            const result = document.getElementById('result');
+            const resultText = document.getElementById('result-text');
+            const nextBtn = document.getElementById('next-btn');
+
+            resultText.textContent = '🎉 Harika! Doğru!';
+            resultText.className = 'correct';
+            nextBtn.style.display = 'inline-block';
+            result.classList.add('show');
+            speak(FEEDBACK_OK);
+
+            window.parent.postMessage({ status: 'success' }, '*');
+        }
+
+        function checkAnswer(animalName, objectName, animalEl) {
+            const result = document.getElementById('result');
+            const resultText = document.getElementById('result-text');
+            const nextBtn = document.getElementById('next-btn');
+
+            const isCorrect = animalName === currentTarget.animal && objectName === currentTarget.object;
+
+            if (isCorrect) {
+                roundLocked = true;
+                currentTarget.counter++;
+                saveCountersToStorage();
+                showReviewModal(currentTarget);
+            } else {
+                resultText.textContent = '😊 Tekrar dene!';
+                resultText.className = 'incorrect';
+                nextBtn.style.display = 'none';
+                speak(FEEDBACK_RETRY);
+                resetAnimalPosition(animalEl);
+                result.classList.add('show');
+
+                setTimeout(() => {
+                    result.classList.remove('show');
+                }, 1200);
+            }
+        }
+
+        function nextRound() {
+            document.getElementById('result').classList.remove('show');
+            setTimeout(startGame, 300);
+        }
+
+        function speakInstruction() {
+            if (!currentTarget) {
+                return;
+            }
+            speak(getSpeechPath(currentTarget));
+        }
+
+        function speak(speechFile) {
+            const audio = new Audio(speechFile);
+            audio.play().catch(() => {
+                // Ses dosyası henüz eklenmemiş olabilir
+            });
+            return audio;
+        }
+
+        function startGameFromModal() {
+            document.getElementById('start-modal').classList.add('hidden');
+            startGame();
+        }
+
+        const reportLink = document.getElementById('report-link');
+        reportLink.addEventListener('click', function(e) {
+            e.preventDefault();
+        });
+        reportLink.addEventListener('dblclick', function() {
+            window.location.href = './rapor.html';
+        });
+
+        loadCountersFromStorage();
+    </script>
+</body>
+</html>
