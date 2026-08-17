@@ -19,11 +19,8 @@
     <div class="limit-card">
         <div class="video-section">
             <div class="video-wrapper">
-				@php
-					$rand = rand(0, 2);
-				@endphp
                 <video autoplay muted loop playsinline class="limit-video">
-                    <source src="{{ asset('assets/videos/bye-bye-' . $rand . '/video-1.mp4') }}" type="video/mp4">
+                    <source src="{{ asset('assets/videos/bye-bye-' . rand(0, 3) . '/video-1.mp4') }}" type="video/mp4">
                 </video>
 
                 <div class="video-overlay">
