@@ -14,6 +14,7 @@ use App\Models\Like;
 use App\Models\Subscribe;
 use App\Models\Video;
 use App\Models\WatchHistory;
+use App\Services\DailyWatchLimitService;
 use App\Services\ImageService;
 use App\Services\VideoService;
 use App\Traits\ManageFiles;
@@ -26,6 +27,11 @@ use Illuminate\Support\Facades\Storage;
 class VideoController extends Controller
 {
     use ManageFiles;
+
+    public function __construct(
+        private readonly DailyWatchLimitService $dailyWatchLimitService
+    ) {
+    }
 
     public function videoUploadPage()
     {
@@ -121,11 +127,9 @@ class VideoController extends Controller
 
     public function show($video)
     {
-		if(auth()->check()){
-			$daily_watch_count = WatchHistory::where('user_id', auth()->id())
-				->whereDate('watched_at', now()->toDateString())
-				->count();
-			if ($daily_watch_count >= config('app.daily_video_watch_limit')) {
+		if (auth()->check()) {
+            $limitStatus = $this->dailyWatchLimitService->getStatus(auth()->id());
+            if ($limitStatus['limit_exceeded']) {
 				return redirect()->route('errors.video-watch-limit-reached');
 			}
 		}
@@ -411,17 +415,12 @@ class VideoController extends Controller
 		}
 
 		// Kullanıcının günlük watchHistory kayıt sayısını kontrol et
-		$dailyWatchCount = WatchHistory::where('user_id', $userId)
-			->whereDate('watched_at', today())
-			->count();
-
-		$dailyLimit = 10; // örnek limit, config'den de alınabilir
+        $limitStatus = $this->dailyWatchLimitService->getStatus($userId);
 
 		return response()->json([
 			'success'          => true,
 			'recorded'         => $shouldRecord,
-			'daily_watch_count' => $dailyWatchCount,
-			'limit_exceeded'   => $dailyWatchCount >= $dailyLimit,
+            ...$limitStatus,
 			'message'          => $shouldRecord
 				? 'İzleme aktivitesi kaydedildi.'
 				: 'Henüz kayıt için 30 dakika geçmedi.',
@@ -430,21 +429,9 @@ class VideoController extends Controller
 
 	public function checkDailyWatchLimit()
 	{
-		if (Auth::check()) {
-			$daily_watch_count = WatchHistory::where('user_id', Auth::id())
-				->whereDate('watched_at', now()->toDateString())
-				->count();
-
-			return response()->json([
-				'daily_watch_count' => $daily_watch_count,
-				'limit_exceeded' => $daily_watch_count > config('app.daily_video_watch_limit'),
-			]);
-		}
-
-		return response()->json([
-			'daily_watch_count' => 0,
-			'limit_exceeded' => false,
-		]);
+        return response()->json(
+            $this->dailyWatchLimitService->getStatus(Auth::id())
+        );
 	}
 
     public function videoWatchLimitReached(){

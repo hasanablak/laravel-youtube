@@ -9,6 +9,8 @@ import { Confirm, Toast, Swal } from './lib/sweetalert/index.js';
 import { LaravelValidationMessageSolver } from './lib/laravel-validation-solver.js'
 import BlockUI from './lib/block-ui.js';
 import TextToSpeech from './lib/text-to-speech.js';
+import DailyWatchLimitBubble from './components/DailyWatchLimitBubble.vue';
+import { useWatchLimitStore } from './stores/watchLimit.js';
 const Modal = window.Modal = defineAsyncComponent(() => import('./components/Modal.vue'))
 
 window.SayHello = SayHello;
@@ -40,8 +42,17 @@ window.app = createApp({
         ...vueMixinFunctions?.map(mix => mix()) || [],
         typeof vueMixinFunction !== 'undefined' ? vueMixinFunction() : {},
     ],
-    components: { Modal },
+    components: { Modal, DailyWatchLimitBubble },
 });
+
+window.refreshWatchLimit = async () => {
+    const store = useWatchLimitStore();
+    return store.fetchLimit();
+};
+
+window.dispatchWatchLimitRefresh = () => {
+    window.dispatchEvent(new CustomEvent('watch-limit:refresh'));
+};
 
 window.app.use(createPinia())
 window.app.use(ZiggyVue, Ziggy);

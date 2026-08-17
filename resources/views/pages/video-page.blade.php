@@ -241,13 +241,59 @@
             </aside>
         </div>
     </div>
-	<Modal size="lg" v-if="showModal" :hide-header="true" :allow-back-drop-click="false" :hide-footer="true">
+	<Modal size="lg" v-if="showGameModal" :hide-header="true" :allow-back-drop-click="false" :hide-footer="true">
 		<template v-slot:header> .. </template>
 		<template v-slot:body> 
 			<iframe width="1200px" height="600px" src="/games/want-to/index.html" frameborder="0"></iframe>	
 		</template>
 	</Modal>
+
+	<Modal
+		size="medium"
+		v-if="showLastWatchModal"
+		:hide-header="true"
+		:allow-back-drop-click="false"
+		:hide-footer="false"
+		:hide-cancel-button="true"
+		modal-content-class="md:w-[92%] max-w-lg"
+		@close="closeLastWatchModal"
+	>
+		<template v-slot:body>
+			<div class="last-watch-warning text-center py-2 px-1">
+				<div class="last-watch-video-wrap mb-4 overflow-hidden rounded-2xl border-4 border-amber-300 shadow-lg">
+					
+                     <video 
+                     ref="lastWatchVideo"
+                     autoplay muted loop playsinline class="w-full aspect-video object-cover bg-amber-50">
+                    <source src="{{ asset('assets/videos/son-1-hak-0/video-1.mp4') }}" type="video/mp4">
+                </video>
+				</div>
+                <audio ref="lastWatchAudio" autoplay preload="auto">
+					<source src="{{ asset('assets/videos/son-1-hak-0/warning-3.mp3') }}" type="audio/mpeg">
+				</audio>
+				<h2 class="text-2xl font-extrabold text-amber-700 mb-2">Bu son izleme hakkın!</h2>
+				<p class="text-base text-amber-900/80 leading-relaxed">
+					Bugün sadece <strong>1 video</strong> daha izleyebilirsin.<br>
+					Seçimini iyi yap ve keyfini çıkar!
+				</p>
+			</div>
+		</template>
+		<template v-slot:footer="{ closeModalHandle }">
+			<button
+				type="button"
+				class="w-full rounded-full bg-gradient-to-r from-sky-500 to-violet-500 px-6 py-3 text-lg font-bold text-white shadow-lg hover:scale-[1.02] transition-transform"
+				@click="closeModalHandle"
+			>
+				Tamam, anladım!
+			</button>
+		</template>
+	</Modal>
     @push('footer')
+        <style>
+            .last-watch-warning {
+                font-family: 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
+            }
+        </style>
         <script>
             vueMixinFunctions.push(() => ({
 			components: {
@@ -255,7 +301,8 @@
 			},
                 data() {
                     return {
-						showModal: false,
+						showGameModal: false,
+						showLastWatchModal: false,
                         isSubscribed: false,
                         subscriberCount: 0,
                         animating: false,
@@ -273,6 +320,15 @@
                         fiveMinuteTimer: null,
                     }
                 },
+				watch: {
+					showLastWatchModal(value) {
+						if (value) {
+							this.$nextTick(() => {
+								this.playLastWatchWarningMedia();
+							});
+						}
+					},
+				},
                 mounted() {
 					
 
@@ -295,6 +351,7 @@
                     // }).catch(()=>{});
 
                     this.fetchComments(videoId);
+					this.checkLastWatchWarning();
 					
 					// Video bitme eventi
 					const videoElement = document.getElementById('video');
@@ -339,7 +396,7 @@
 						window.addEventListener('message', function(event) {
 							// ikinci settimeout, cevap geldikten birsüre sonra modal'ı kapat ve videoyu oynat, çünkü modal'da "HARİKA BAŞARDIN!" sesi var.
 							setTimeout(() => {
-								self.showModal = false;
+								self.showGameModal = false;
 								// Modal kapandıktan sonra videoyu kaldığı yerden başlat
 								const videoElement = document.getElementById('video');
 								if (videoElement && videoElement.paused) {
@@ -362,22 +419,69 @@
 						}
 						
 						// Modal'ı aç
-						this.showModal = true;
+						this.showGameModal = true;
+					},
+
+					async checkLastWatchWarning() {
+						try {
+							const data = await window.refreshWatchLimit?.();
+							if (data && data.remaining === 1 && !data.limit_exceeded) {
+								this.showLastWatchModal = true;
+							}
+						} catch (error) {
+							console.error('Son izleme hakkı uyarısı alınamadı:', error);
+						}
+					},
+
+					playLastWatchWarningMedia() {
+						const video = this.$refs.lastWatchVideo;
+						const audio = this.$refs.lastWatchAudio;
+
+						if (video) {
+							video.currentTime = 0;
+							video.play().catch(() => {});
+						}
+
+						if (audio) {
+							audio.currentTime = 0;
+							audio.play().catch(() => {});
+						}
+					},
+
+					closeLastWatchModal() {
+						this.stopLastWatchWarningMedia();
+						this.showLastWatchModal = false;
+					},
+
+					stopLastWatchWarningMedia() {
+						const video = this.$refs.lastWatchVideo;
+						const audio = this.$refs.lastWatchAudio;
+
+						if (video) {
+							video.pause();
+							video.currentTime = 0;
+						}
+
+						if (audio) {
+							audio.pause();
+							audio.currentTime = 0;
+						}
 					},
 					
 					async storeVideoWatchingActivity() {
 						const videoId = {{ $currentVideo->id }};
 						const result = await axios.post(`/api/videos/${videoId}/store-video-watching-activity`);
+                        window.dispatchWatchLimitRefresh?.();
 						return result.data;
 					},
 
 					async checkDailyWatchLimit() {
 						try {
-							const response = await axios.get('/api/check-daily-watch-limit');
-							return response.data.limit_exceeded;
+                            const data = await window.refreshWatchLimit?.();
+							return data?.limit_exceeded ?? false;
 						} catch (error) {
 							console.error('Günlük izleme limiti kontrol hatası:', error);
-							return true; // Hata durumunda izleme izni ver
+							return true;
 						}
 					},
 					

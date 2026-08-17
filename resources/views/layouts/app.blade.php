@@ -365,6 +365,7 @@
     <main class="flex-grow pt-14 @if(false) lg:pl-[320px] @endif">
         @yield('content')
     </main>
+    <daily-watch-limit-bubble></daily-watch-limit-bubble>
 </div>
 
 <script>
