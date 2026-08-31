@@ -281,7 +281,8 @@
 		<template v-slot:footer="{ closeModalHandle }">
 			<button
 				type="button"
-				class="w-full rounded-full bg-gradient-to-r from-sky-500 to-violet-500 px-6 py-3 text-lg font-bold text-white shadow-lg hover:scale-[1.02] transition-transform"
+                style="background: linear-gradient(to right, yellow, deeppink);"
+				class="w-full rounded-full bg-gradient-to-r px-6 py-3 text-lg font-bold text-white shadow-lg hover:scale-[1.02] transition-transform"
 				@click="closeModalHandle"
 			>
 				Tamam, anladım!
