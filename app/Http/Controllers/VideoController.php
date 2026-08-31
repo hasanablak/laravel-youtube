@@ -127,13 +127,15 @@ class VideoController extends Controller
 
     public function show($video)
     {
+        $video = Video::where('uid',$video)->with('channel')->first();
+
 		if (auth()->check()) {
-            $limitStatus = $this->dailyWatchLimitService->getStatus(auth()->id());
-            if ($limitStatus['limit_exceeded']) {
+            $limitStatus = $this->dailyWatchLimitService->getStatus(auth()->id(), $video?->id);
+            if (!$limitStatus['can_watch']) {
 				return redirect()->route('errors.video-watch-limit-reached');
 			}
 		}
-        $video = Video::where('uid',$video)->with('channel')->first();
+
 		$video->update([
 			'views' => $video->views + 1,
 		]);
@@ -427,10 +429,13 @@ class VideoController extends Controller
 		]);
 	}
 
-	public function checkDailyWatchLimit()
+	public function checkDailyWatchLimit(Request $request)
 	{
         return response()->json(
-            $this->dailyWatchLimitService->getStatus(Auth::id())
+            $this->dailyWatchLimitService->getStatus(
+                Auth::id(),
+                $request->integer('video_id') ?: null
+            )
         );
 	}
 

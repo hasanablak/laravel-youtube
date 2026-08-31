@@ -26,11 +26,13 @@ export const useWatchLimitStore = defineStore('watchLimit', {
             this.limitExceeded = !!data.limit_exceeded;
             this.loaded = true;
         },
-        async fetchLimit() {
+        async fetchLimit(videoId) {
             this.loading = true;
 
             try {
-                const { data } = await window.axios.get('/api/check-daily-watch-limit');
+                const { data } = await window.axios.get('/api/check-daily-watch-limit', {
+                    params: videoId ? { video_id: videoId } : {},
+                });
                 this.applyPayload(data);
                 return data;
             } finally {

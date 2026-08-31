@@ -45,9 +45,9 @@ window.app = createApp({
     components: { Modal, DailyWatchLimitBubble },
 });
 
-window.refreshWatchLimit = async () => {
+window.refreshWatchLimit = async (videoId) => {
     const store = useWatchLimitStore();
-    return store.fetchLimit();
+    return store.fetchLimit(videoId);
 };
 
 window.dispatchWatchLimitRefresh = () => {

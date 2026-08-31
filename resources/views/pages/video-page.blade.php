@@ -477,8 +477,12 @@
 
 					async checkDailyWatchLimit() {
 						try {
-                            const data = await window.refreshWatchLimit?.();
-							return data?.limit_exceeded ?? false;
+                            const { data } = await axios.get('/api/check-daily-watch-limit', {
+                                params: { video_id: {{ $currentVideo->id }} },
+                            });
+                            window.refreshWatchLimit?.();
+							// Kota dolsa bile bu video bugün zaten sayıldıysa izlemeye devam edilir.
+							return !(data?.can_watch ?? !data?.limit_exceeded);
 						} catch (error) {
 							console.error('Günlük izleme limiti kontrol hatası:', error);
 							return true;
