@@ -22,6 +22,9 @@ export default {
   theme: {
     fontFamily: {
       satoshi: ['Satoshi', 'sans-serif'],
+      // Çocuk teması (Şeker Parkı): başlıklar Baloo 2, metin Nunito
+      baloo: ['"Baloo 2"', 'sans-serif'],
+      nunito: ['Nunito', 'sans-serif'],
     },
     screens: {
       '2xsm': '375px',
@@ -34,6 +37,33 @@ export default {
       colors: {
         current: 'currentColor',
         transparent: 'transparent',
+        // Çocuk teması (Şeker Parkı) renkleri
+        candy: {
+          cream: '#FFF6D6',
+          ink: '#1F1A3D',
+          muted: '#4A4466',
+          sand: '#F1E6C4',
+          pink: '#FF5C8A',
+          blue: '#3AA0FF',
+          sky: '#8FD0FF',
+          yellow: '#FFB800',
+          green: '#2EC27E',
+          purple: '#8B5CF6',
+          lilac: '#B794FF',
+          orange: '#FF8A3D',
+          // Naif / pastel tonlar (ana sayfa)
+          blush: '#FFF5F8',
+          rose: '#FF8FB1',
+          mint: '#7FD8B0',
+        },
+        pastel: {
+          pink: '#FFD6E3',
+          lilac: '#E8DDFF',
+          peach: '#FFE3D3',
+          mint: '#D8F3E6',
+          sky: '#DCEEFF',
+          butter: '#FFF1C7',
+        },
         white: '#FFFFFF',
         black: '#1C2434',
         'black-2': '#010101',
@@ -244,6 +274,13 @@ export default {
         6: '6px',
       },
 	  boxShadow: {
+        // Çocuk teması: koyu, bulanıksız "çıkartma" gölgesi
+        'pop-sm': '4px 4px 0 #1F1A3D',
+        pop: '6px 6px 0 #1F1A3D',
+        'pop-lg': '8px 8px 0 #1F1A3D',
+        // Naif tema: pembe tonlu yumuşak gölge
+        soft: '0 4px 14px rgba(232, 120, 160, 0.18)',
+        'soft-lg': '0 10px 26px rgba(232, 120, 160, 0.30)',
         'classic': '2px 0px 4px 0px rgba(0, 0, 0, 0.4)',
         default: '0px 8px 13px -3px rgba(0, 0, 0, 0.07)',
         card: '0px 1px 3px rgba(0, 0, 0, 0.12)',

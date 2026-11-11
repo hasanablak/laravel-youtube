@@ -1,57 +1,98 @@
 @extends('layouts.app', [
-    "title" => "YouTube"
+    "title" => "Minik Ekran"
 ])
 
+@push('header')
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+@endpush
+
+@php
+    /*
+     * Kanal ağırlıklı, resim odaklı ana sayfa.
+     * Çocuklar okuma bilmediği için kanal büyük bir kapak resmiyle tanınır;
+     * altındaki kanal adı ebeveynler içindir. Kanal adı dokununca sesli okunur.
+     * Tailwind sınıfları tam yazılmalı (JIT bunları tarar).
+     */
+    $palette = [
+        'bg-pastel-pink',
+        'bg-pastel-lilac',
+        'bg-pastel-peach',
+        'bg-pastel-mint',
+        'bg-pastel-sky',
+        'bg-pastel-butter',
+    ];
+    $colorFor = fn (int $id) => $palette[$id % count($palette)];
+    $initial = fn (string $name) => mb_strtoupper(mb_substr($name, 0, 1));
+
+    $starSvg = '<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/>';
+@endphp
+
 @section('content')
-    <div class="max-w-7xl mx-auto px-4 text-gray-900" style="margin-top: 30px;">
+<div class="min-h-screen bg-candy-blush font-nunito text-candy-ink">
+    <div class="mx-auto flex max-w-[1600px] flex-col gap-3 px-3 pb-16 pt-3 sm:px-4">
 
-        {{-- Kategoriler / Channels --}}
-        <div class="mb-8">
-              <h2 class="text-2xl font-bold text-pink-600 mb-4">Kanallar</h2>
-            <div class="flex flex-wrap gap-4 pb-4">
-                @foreach($channels as $channel)
-                    <a data-speech="true" data-speech-text="{{ $channel->name }}" href="{{ route('channel', $channel->slug) }}" 
-                       class="flex-shrink-0 group">
-                        <div class="flex flex-col items-center">
-                            {{-- Channel Avatar --}}
-                            <div class="w-20 h-20 rounded-full overflow-hidden bg-gray-200 mb-2 ring-2 ring-transparent group-hover:ring-pink-300 transition-all">
-                                    @if($channel->latest_thumbnail)
-                                        <img src="{{ Storage::url('videos/' . $channel->videos->first()->uid . '/' . $channel->latest_thumbnail) }}" 
-                                             alt="{{ $channel->name }}"
-                                             class="w-full h-full object-cover">
-                                    @else
-                                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-400 to-pink-600 text-white text-2xl font-bold">
-                                            {{ substr($channel->name, 0, 1) }}
-                                        </div>
-                                    @endif
-                            </div>
-                            {{-- Channel Name --}}
-                                <span  class="text-sm font-medium text-pink-600 group-hover:text-pink-700 text-center max-w-[80px] line-clamp-2">
-                                {{ $channel->name }}
-                            </span>
-                        </div>
-                    </a>
-                @endforeach
+        {{-- Günlük yıldızlar --}}
+        @if($limitStatus)
+            @php $used = min($limitStatus['daily_watch_count'], $limitStatus['daily_limit']); @endphp
+            <div class="flex justify-end">
+                <div class="flex items-center gap-0.5 rounded-full bg-white px-2.5 py-1.5 shadow-soft"
+                     aria-label="Bugün {{ $limitStatus['remaining'] }} yıldızın kaldı">
+                    @for($i = 0; $i < $limitStatus['daily_limit']; $i++)
+                        <svg class="h-7 w-7" viewBox="0 0 24 24" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"
+                             @if($i < $used) fill="#FCE4EC" stroke="#F3B6CA" @else fill="#FFC94D" stroke="#F0A92E" @endif>{!! $starSvg !!}</svg>
+                    @endfor
+                </div>
             </div>
-        </div>
-		
-        {{-- Video Grid --}}
-        <x-videos-grid :videos="$videos" />
-    </div>
+        @endif
 
-    <style>
-        .thin-scrollbar::-webkit-scrollbar {
-            height: 8px;
-        }
-        .thin-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .thin-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #c0c0c0;
-            border-radius: 4px;
-        }
-        .thin-scrollbar::-webkit-scrollbar-thumb:hover {
-            background-color: #a0a0a0;
-        }
-    </style>
+        {{-- Kanallar: büyük kapak resmi, adı resmin üzerinde --}}
+        <section aria-label="Kanallar" class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">
+            @foreach($channels as $channel)
+                @php $allWatched = $channel['video_count'] > 0 && $channel['watched'] >= $channel['video_count']; @endphp
+                <a href="{{ route('channel', $channel['slug']) }}"
+                   data-speech="true" data-speech-text="{{ $channel['name'] }}"
+                   title="{{ $channel['name'] }}"
+                   class="{{ $colorFor($channel['id']) }} group relative flex flex-col overflow-hidden rounded-3xl border-2 border-white shadow-soft transition duration-200 hover:-translate-y-0.5 hover:shadow-soft-lg focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-candy-rose">
+
+                    <span class="relative flex aspect-video items-center justify-center overflow-hidden">
+                        {{-- Resim yüklenemezse kanalın baş harfi görünür --}}
+                        <span class="text-5xl font-extrabold text-candy-ink/40" aria-hidden="true">{{ $initial($channel['name']) }}</span>
+                        @if(!empty($channel['thumbs']))
+                            <img src="{{ $channel['thumbs'][0]['url'] }}" alt="" onerror="this.remove()" loading="lazy"
+                                 class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105">
+                        @endif
+
+                        @if($channel['new_count'] > 0)
+                            <span class="absolute right-1.5 top-1.5 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-candy-rose shadow-soft"
+                                  aria-label="{{ $channel['new_count'] }} yeni video">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="#FFFFFF" aria-hidden="true">{!! $starSvg !!}</svg>
+                            </span>
+                        @endif
+
+                        @if($allWatched)
+                            <span class="absolute left-1.5 top-1.5 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-candy-mint shadow-soft"
+                                  aria-label="Hepsini izledin">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                            </span>
+                        @endif
+
+                        {{-- Kanal adı (ebeveyn için): resmin altında şeffaftan beyaza geçiş.
+                             Fareli cihazlarda sadece üzerine gelince görünür; dokunmatikte hep görünür. --}}
+                        <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-white via-white/80 to-transparent px-2.5 pb-1.5 pt-7 text-sm font-normal leading-tight transition-opacity duration-200 sm:text-base [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-visible:opacity-100">
+                            <span class="line-clamp-1">{{ $channel['name'] }}</span>
+                        </span>
+                    </span>
+                </a>
+            @endforeach
+        </section>
+
+        @if($channels->isEmpty())
+            <p class="rounded-3xl bg-white p-5 font-bold shadow-soft">
+                Henüz kanal yok. <code>php artisan manuel:video-updater</code> ile video ekleyebilirsin.
+            </p>
+        @endif
+    </div>
+</div>
 @endsection

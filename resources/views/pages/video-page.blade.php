@@ -2,15 +2,26 @@
 		'title' => $currentVideo->title
 	])
 
+@push('header')
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+@endpush
+
+@php
+    // Kanalın resmi: kanalın en son videosunun kapağı
+    $channelAvatar = $currentVideo->channel->videos()->latest()->first()?->thumbnail_url;
+@endphp
+
 @section('content')
-    <div id="app" class="max-w-7xl mx-auto px-4 py-6 bg-gray-50 min-h-screen">
-        <div class="flex flex-col lg:flex-row gap-8" data-channel-id="{{ $currentVideo->channel->id }}">
+    <div id="app" class="min-h-screen bg-candy-blush font-nunito text-candy-ink">
+        <div class="mx-auto flex max-w-[1600px] flex-col gap-5 px-3 pb-16 pt-3 sm:px-4 lg:flex-row" data-channel-id="{{ $currentVideo->channel->id }}">
 
             {{-- SOL BÖLÜM --}}
-            <div class="flex-1 space-y-6">
+            <div class="min-w-0 flex-1 space-y-4">
 
                 {{-- Video Player --}}
-                <div class="bg-black rounded-xl overflow-hidden shadow-md">
+                <div class="overflow-hidden rounded-3xl border-2 border-white bg-black shadow-soft-lg">
                     <video
 						id="video"
                         controls
@@ -24,101 +35,83 @@
                     </video>
                 </div>
 
-                {{-- Başlık --}}
-                <h1 class="text-2xl font-semibold text-gray-900">{{ $currentVideo->title }}</h1>
+                {{-- Kanal + başlık + etkileşim --}}
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <a href="{{ route('channel', $currentVideo->channel->slug) }}"
+                       data-speech="true" data-speech-text="{{ $currentVideo->channel->name }}"
+                       class="group flex min-w-0 items-center gap-3">
+                        <span class="relative h-14 w-14 flex-none overflow-hidden rounded-full border-2 border-white bg-pastel-pink shadow-soft transition group-hover:shadow-soft-lg">
+                            @if($channelAvatar)
+                                <img src="{{ $channelAvatar }}" alt="" onerror="this.remove()" class="h-full w-full object-cover">
+                            @endif
+                        </span>
+                        <div class="min-w-0">
+                            <h1 class="line-clamp-2 text-base font-bold leading-snug sm:text-lg">{{ $currentVideo->title }}</h1>
+                            <span class="block text-sm font-normal text-candy-muted">{{ $currentVideo->channel->name }}</span>
+                        </div>
+                    </a>
 
-                {{-- Kanal Bilgileri + Etkileşim --}}
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-gray-200">
+                    <div class="flex items-center gap-2">
+                        {{-- Abone Ol --}}
+                        <button
+                            :class="[
+                                'relative flex h-11 items-center gap-2 rounded-full px-4 text-sm font-bold shadow-soft transition-all duration-300',
+                                isSubscribed ? 'bg-white text-candy-muted' : 'bg-candy-rose text-white hover:shadow-soft-lg',
+                                animating ? 'scale-105' : ''
+                            ]"
+                            @click="toggleSubscribe({{ $currentVideo->channel->id }})"
+                        >
+                            <i :class="isSubscribed ? 'fas fa-check' : 'fas fa-bell'"></i>
+                            <span v-if="!isSubscribed">Abone Ol</span>
+                            <span v-else>Abone Olundu</span>
+                            <span v-if="animating" class="absolute inset-0 rounded-full bg-white/40 animate-ping"></span>
+                        </button>
 
-                    {{-- Kanal Bilgileri --}}
-                    <div class="flex items-center gap-4">
-                        <a href="{{ route('channel', $currentVideo->channel->slug) }}" class="flex items-center gap-3 group">
-                            <img
-                                src="{{ $currentVideo->channel->image ? asset($currentVideo->channel->image) : asset('images/default-avatar.png') }}"
-                                class="w-12 h-12 rounded-full object-cover ring-2 ring-transparent group-hover:ring-red-500 transition"
-                            >
-                            <div>
-                                <div class="flex items-center gap-1 font-semibold text-gray-900">
-                                    {{ $currentVideo->channel->name }}
-                                    @if($currentVideo->channel->verified)
-                                        <i class="fas fa-check-circle text-blue-500 text-sm"></i>
-                                    @endif
-                                </div>
-                                <p class="text-gray-500 text-sm">@{{ subscriberCount }} abone</p>
-                            </div>
-                        </a>
-
-                        {{-- Abone Ol Butonu --}}
-                        <transition name="pulse-fade" mode="out-in">
-                            <button
-                                :class="[
-                                    'relative font-medium px-5 py-2 rounded-full transition-all duration-300 flex items-center justify-center gap-2 border shadow-sm',
-                                    isSubscribed
-                                        ? 'bg-white text-gray-900 border-gray-300 hover:bg-gray-50'
-                                        : 'bg-red-600 text-white border-transparent hover:bg-red-700',
-                                    animating ? 'scale-105' : ''
-                                ]"
-                                @click="toggleSubscribe({{ $currentVideo->channel->id }})"
-                            >
-                                <span v-if="!isSubscribed" class="flex items-center gap-2">
-                                    <i class="fas fa-bell"></i>
-                                    Abone Ol
-                                </span>
-                                <span v-else class="flex items-center gap-2">
-                                    <i class="fas fa-check text-green-600"></i>
-                                    Abone Olundu
-                                </span>
-
-                                <span v-if="animating" class="absolute inset-0 rounded-full bg-gray-200/40 animate-ping"></span>
-                            </button>
-                        </transition>
-                    </div>
-
-                    {{-- 🎬 Etkileşim Butonları --}}
-                    <div class="flex items-center gap-4">
+                        {{-- Beğen (kalp) --}}
                         <button
                             @click="toggleLike({{ $currentVideo->id }})"
+                            aria-label="Beğen"
                             :class="[
-        'flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition-all duration-200',
-        liked ? 'text-blue-600 scale-110' : 'text-gray-700',
-        likeAnimating ? 'animate-bounce' : ''
-    ]"
+                                'flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-bold shadow-soft transition-all duration-200 hover:shadow-soft-lg',
+                                liked ? 'text-candy-rose scale-110' : 'text-candy-muted',
+                                likeAnimating ? 'animate-bounce' : ''
+                            ]"
                         >
-                            <i class="fa-solid fa-thumbs-up"></i>
+                            <i :class="liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'"></i>
                             <span>@{{ likeCount }}</span>
                         </button>
 
+                        {{-- Beğenme --}}
                         <button
                             @click="toggleDislike({{ $currentVideo->id }})"
+                            aria-label="Beğenme"
                             :class="[
-        'flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition-all duration-200',
-        disliked ? 'text-red-600 scale-110' : 'text-gray-700',
-        dislikeAnimating ? 'animate-bounce' : ''
-    ]"
+                                'flex h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-bold shadow-soft transition-all duration-200 hover:shadow-soft-lg',
+                                disliked ? 'text-candy-ink scale-110' : 'text-candy-muted',
+                                dislikeAnimating ? 'animate-bounce' : ''
+                            ]"
                         >
                             <i class="fa-solid fa-thumbs-down"></i>
                             <span>@{{ dislikeCount }}</span>
                         </button>
-
                     </div>
-
-
-
                 </div>
 
-                {{-- Video Bilgisi --}}
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                    <div class="text-sm text-gray-600 mb-2 flex items-center gap-2">
+                {{-- Video Bilgisi (ebeveyn için) --}}
+                <div class="rounded-3xl bg-white p-4 text-sm shadow-soft">
+                    <div class="mb-1 flex items-center gap-2 text-candy-muted">
                         <span>{{ number_format($currentVideo->views) }} görüntüleme</span>
                         <span>•</span>
                         <span>{{ $currentVideo->created_at->diffForHumans() }}</span>
                     </div>
-                    <p class="text-gray-800 whitespace-pre-line leading-relaxed">{{ $currentVideo->description }}</p>
+                    @if($currentVideo->description)
+                        <p class="whitespace-pre-line leading-relaxed">{{ $currentVideo->description }}</p>
+                    @endif
                 </div>
 
                 {{-- 💬 YORUMLAR --}}
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <div class="rounded-3xl bg-white p-4 shadow-soft">
+                    <h3 class="mb-4 text-base font-bold">
                         Yorumlar (@{{ commentCount }})
                     </h3>
 
@@ -133,13 +126,13 @@
                             @keyup.enter="postComment({{ $currentVideo->id }})"
                             type="text"
                             placeholder="Yorum ekle..."
-                            class="flex-1 bg-transparent border-b border-gray-300 focus:border-gray-600 text-gray-800 pb-2 outline-none placeholder-gray-500"
+                            class="flex-1 bg-transparent border-b border-pastel-pink focus:border-candy-rose text-gray-800 pb-2 outline-none placeholder-gray-500"
                         >
                         <button
                             @click="postComment({{ $currentVideo->id }})"
-                            class="px-5 py-2 rounded-full bg-gray-100 text-gray-800 font-semibold text-sm border border-gray-300 hover:bg-gray-200 active:scale-95 transition duration-200 flex items-center gap-2"
+                            class="flex items-center gap-2 rounded-full bg-candy-rose px-5 py-2 text-sm font-bold text-white shadow-soft transition duration-200 hover:shadow-soft-lg active:scale-95"
                         >
-                            <i class="fas fa-paper-plane text-gray-700"></i>
+                            <i class="fas fa-paper-plane"></i>
                             <span>Paylaş</span>
                         </button>
 
@@ -177,7 +170,7 @@
                                 <p class="text-gray-800 mt-1 text-sm leading-relaxed">@{{ comment.comment }}</p>
 
                                 <!-- Alt Yorumlar -->
-                                <div v-if="comment.replies && comment.replies.length" class="ml-12 mt-3 space-y-4 border-l border-gray-200 pl-4">
+                                <div v-if="comment.replies && comment.replies.length" class="ml-12 mt-3 space-y-4 border-l border-pastel-pink pl-4">
                                     <div
                                         v-for="reply in comment.replies"
                                         :key="reply.id"
@@ -217,11 +210,11 @@
                                         <input
                                             v-model="comment.replyText"
                                             placeholder="Yanıt ekle..."
-                                            class="w-full bg-transparent border-b border-gray-300 focus:border-blue-600 text-sm pb-1 outline-none transition"
+                                            class="w-full bg-transparent border-b border-pastel-pink focus:border-candy-rose text-sm pb-1 outline-none transition"
                                         >
                                         <button
                                             @click="replyToComment({{ $currentVideo->id }}, comment.id, comment.replyText)"
-                                            class="absolute right-0 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-semibold hover:underline transition"
+                                            class="absolute right-0 top-1/2 -translate-y-1/2 text-candy-rose text-xs font-bold hover:underline transition"
                                         >
                                             Paylaş
                                         </button>
@@ -234,9 +227,9 @@
             </div>
 
             {{-- SAĞ BÖLÜM: Önerilen Videolar --}}
-            <aside class="lg:w-96 w-full space-y-3">
+            <aside aria-label="Önerilen videolar" class="grid w-full content-start grid-cols-2 gap-3 sm:grid-cols-3 lg:w-[340px] lg:grid-cols-1 xl:w-[400px]">
                 @foreach($recommendationVideos as $video)
-					<x-video :video="$video" />
+					<x-kid-video-card :video="$video" />
                 @endforeach
             </aside>
         </div>

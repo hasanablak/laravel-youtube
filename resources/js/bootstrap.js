@@ -85,6 +85,11 @@ window.app.mixin({
 					window.TextToSpeech(text);
 				}
 			});
+
+			// Fare karttan çıkınca okumayı yarıda kes
+			el.addEventListener('mouseleave', () => {
+				window.speechSynthesis.cancel();
+			});
 		});
 	}
 })
