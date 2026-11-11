@@ -119,9 +119,6 @@ class VideoController extends Controller
         return view('pages.channel',[
             'channel'=>$channel,
             'totalVideoCount'=>count($channel->videos),
-            'totalWatchCount'=> $channel->videos->sum(function($video){
-                return $video->watchHistories()->count();
-            }),
         ]);
     }
 
