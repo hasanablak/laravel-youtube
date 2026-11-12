@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Channel;
 use App\Models\Video;
 use App\Models\WatchHistory;
-use App\Services\DailyWatchLimitService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -13,11 +12,6 @@ class HomeController extends Controller
 {
 	/** "Yeni video!" etiketi için bir videonun kaç gün yeni sayılacağı */
 	private const NEW_VIDEO_DAYS = 7;
-
-	public function __construct(
-		private readonly DailyWatchLimitService $dailyWatchLimitService
-	) {
-	}
 
 	/**
 	 * Kanal ağırlıklı ana sayfa: her kanal büyük bir kapak resmiyle gösterilir.
@@ -34,7 +28,6 @@ class HomeController extends Controller
 
 		$watchedPerChannel = collect();
 		$newPerChannel = $this->countNewVideosPerChannel($userId);
-		$limitStatus = null;
 
 		if ($userId) {
 			$watchedPerChannel = WatchHistory::query()
@@ -43,8 +36,6 @@ class HomeController extends Controller
 				->groupBy('videos.channel_id')
 				->selectRaw('videos.channel_id, COUNT(DISTINCT watch_histories.video_id) as watched')
 				->pluck('watched', 'videos.channel_id');
-
-			$limitStatus = $this->dailyWatchLimitService->getStatus($userId);
 		}
 
 		$channels = $channels
@@ -63,7 +54,6 @@ class HomeController extends Controller
 
 		return view('pages.index', [
 			'channels' => $channels,
-			'limitStatus' => $limitStatus,
 		]);
 	}
 

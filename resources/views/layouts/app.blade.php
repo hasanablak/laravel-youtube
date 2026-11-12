@@ -206,6 +206,8 @@
 
 </aside>
 @endif
+{{-- Üst Menü: çocuk sayfaları (ana sayfa, kanal, video) 'hideTopBar' => true ile gizler --}}
+@unless($hideTopBar ?? false)
 <!-- Üst Menü -->
 <nav class="fixed top-0 right-0 left-0 bg-white dark:bg-slate-800 shadow-sm z-20
 
@@ -361,8 +363,11 @@
         </div>
     </div>
 </nav>
+@else
+<x-kid-header />
+@endunless
 <div id="app" class="flex flex-col min-h-8">
-    <main class="flex-grow pt-14 @if(false) lg:pl-[320px] @endif">
+    <main class="flex-grow @unless($hideTopBar ?? false) pt-14 @endunless @if(false) lg:pl-[320px] @endif">
         @yield('content')
     </main>
     <daily-watch-limit-bubble></daily-watch-limit-bubble>

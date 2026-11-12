@@ -1,5 +1,6 @@
 @extends('layouts.app', [
-		'title' => $currentVideo->title
+		'title' => $currentVideo->title,
+		'hideTopBar' => true,
 	])
 
 @push('header')

@@ -1,5 +1,6 @@
 @extends('layouts.app', [
-    "title" => "Minik Ekran"
+    "title" => "Minik Ekran",
+    "hideTopBar" => true,
 ])
 
 @push('header')
@@ -32,20 +33,6 @@
 @section('content')
 <div class="min-h-screen bg-candy-blush font-nunito text-candy-ink">
     <div class="mx-auto flex max-w-[1600px] flex-col gap-3 px-3 pb-16 pt-3 sm:px-4">
-
-        {{-- Günlük yıldızlar --}}
-        @if($limitStatus)
-            @php $used = min($limitStatus['daily_watch_count'], $limitStatus['daily_limit']); @endphp
-            <div class="flex justify-end">
-                <div class="flex items-center gap-0.5 rounded-full bg-white px-2.5 py-1.5 shadow-soft"
-                     aria-label="Bugün {{ $limitStatus['remaining'] }} yıldızın kaldı">
-                    @for($i = 0; $i < $limitStatus['daily_limit']; $i++)
-                        <svg class="h-7 w-7" viewBox="0 0 24 24" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"
-                             @if($i < $used) fill="#FCE4EC" stroke="#F3B6CA" @else fill="#FFC94D" stroke="#F0A92E" @endif>{!! $starSvg !!}</svg>
-                    @endfor
-                </div>
-            </div>
-        @endif
 
         {{-- Kanallar: büyük kapak resmi, adı resmin üzerinde --}}
         <section aria-label="Kanallar" class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6">

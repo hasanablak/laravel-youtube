@@ -1,5 +1,6 @@
 @extends('layouts.app', [
-    'title' => $channel->name . ' | Minik Ekran'
+    'title' => $channel->name . ' | Minik Ekran',
+    'hideTopBar' => true,
 ])
 
 @push('header')
