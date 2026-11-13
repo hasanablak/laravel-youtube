@@ -22,6 +22,7 @@ export default defineConfig(({ command, mode }) => {
 				input: [
 					'resources/css/app.css',
 					'resources/js/app.js',
+					'resources/js/kid-dragon.js', // ana sayfadaki 3D ejder (Three.js'i sadece bu sayfa yükler)
                     ...glob.sync(`{${ASSET_PATHS.join(",")}}`),
 				],
 				refresh: true,

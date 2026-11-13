@@ -1,6 +1,6 @@
 {
   "Modules/Auth/resources/assets/css/app.css": {
-    "file": "assets/app-l0sNRNKZ-v4.1.3.js",
+    "file": "assets/app-DP2rzg_V-v4.1.3.js",
     "name": "app",
     "src": "Modules/Auth/resources/assets/css/app.css",
     "isEntry": true
@@ -20,7 +20,7 @@
     ]
   },
   "Modules/Auth/resources/assets/js/components/AsyncComp.vue": {
-    "file": "assets/AsyncComp-I-K8rGxu-v4.1.3.js",
+    "file": "assets/AsyncComp-BIlTPEP8-v4.1.3.js",
     "name": "AsyncComp",
     "src": "Modules/Auth/resources/assets/js/components/AsyncComp.vue",
     "isDynamicEntry": true,
@@ -31,7 +31,7 @@
     ]
   },
   "Modules/Blog/resources/assets/css/app.css": {
-    "file": "assets/app-DP2rzg_V-v4.1.3.js",
+    "file": "assets/app-l0sNRNKZ-v4.1.3.js",
     "name": "app",
     "src": "Modules/Blog/resources/assets/css/app.css",
     "isEntry": true
@@ -51,7 +51,7 @@
     ]
   },
   "Modules/Blog/resources/assets/js/components/AsyncComp.vue": {
-    "file": "assets/AsyncComp-BIlTPEP8-v4.1.3.js",
+    "file": "assets/AsyncComp-I-K8rGxu-v4.1.3.js",
     "name": "AsyncComp",
     "src": "Modules/Blog/resources/assets/js/components/AsyncComp.vue",
     "isDynamicEntry": true,
@@ -88,6 +88,10 @@
   "_sweetalert2-BrPZ0DEU-v4.1.3.js": {
     "file": "assets/sweetalert2-BrPZ0DEU-v4.1.3.js",
     "name": "sweetalert2"
+  },
+  "_three-Dr1-Lee8-v4.1.3.js": {
+    "file": "assets/three-Dr1-Lee8-v4.1.3.js",
+    "name": "three"
   },
   "_vue-ClNP7KBo-v4.1.3.js": {
     "file": "assets/vue-ClNP7KBo-v4.1.3.js",
@@ -142,6 +146,15 @@
     ],
     "css": [
       "assets/Modal-DSriA7QC-v4.1.3.css"
+    ]
+  },
+  "resources/js/kid-dragon.js": {
+    "file": "assets/kid-dragon-w-ywecjO-v4.1.3.js",
+    "name": "kid-dragon",
+    "src": "resources/js/kid-dragon.js",
+    "isEntry": true,
+    "imports": [
+      "_three-Dr1-Lee8-v4.1.3.js"
     ]
   }
 }

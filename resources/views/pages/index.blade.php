@@ -83,3 +83,8 @@
     </div>
 </div>
 @endsection
+
+{{-- Aşağı kaydırmayı özendiren 3D ejder; #app dışında olmalı (bkz. bileşen açıklaması) --}}
+@push('footer')
+    <x-kid-dragon />
+@endpush
