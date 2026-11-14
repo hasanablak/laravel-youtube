@@ -238,7 +238,12 @@
 	<Modal size="lg" v-if="showGameModal" :hide-header="true" :allow-back-drop-click="false" :hide-footer="true">
 		<template v-slot:header> .. </template>
 		<template v-slot:body> 
-			<iframe width="1200px" height="600px" src="/games/want-to/index.html" frameborder="0"></iframe>	
+			{{-- İngilizce söyleme oyunu: 2 hayvan + 2 renk + 1 nesne. Mikrofon için allow="microphone" şart. --}}
+			<iframe
+				src="/games/hayvan-ingilizce/index.html?animals=2&colors=2&objects=1&embed=1"
+				allow="microphone; autoplay"
+				style="width: min(1200px, 92vw); height: min(640px, 80vh); border: 0; border-radius: 24px; display: block;"
+			></iframe>
 		</template>
 	</Modal>
 
@@ -389,16 +394,22 @@
 					const self = this;
 					setTimeout(() => {
 						window.addEventListener('message', function(event) {
-							// ikinci settimeout, cevap geldikten birsüre sonra modal'ı kapat ve videoyu oynat, çünkü modal'da "HARİKA BAŞARDIN!" sesi var.
+							// Sadece kendi oyunlarımızdan gelen bitiş mesajları: { status: 'success' | 'skipped' }
+							if (event.origin !== window.location.origin) return;
+							const status = event.data && event.data.status;
+							if (status !== 'success' && status !== 'skipped') return;
+
+							// Oyun kutlama sesini bitirip mesaj gönderiyor; atlandıysa hiç bekletme.
 							setTimeout(() => {
 								self.showGameModal = false;
 								// Modal kapandıktan sonra videoyu kaldığı yerden başlat
 								const videoElement = document.getElementById('video');
 								if (videoElement && videoElement.paused) {
-									if (videoElement.requestFullscreen) videoElement.requestFullscreen();
-									videoElement.play();
+									// Kullanıcı hareketi olmadan tam ekran reddedilebilir; video yine oynasın
+									videoElement.requestFullscreen?.().catch(() => {});
+									videoElement.play().catch(() => {});
 								}
-							}, 1800);
+							}, status === 'success' ? 1200 : 300);
 						});
 					}, 1000);
 
@@ -410,7 +421,7 @@
 						const videoElement = document.getElementById('video');
 						if (videoElement && !videoElement.paused) {
 							videoElement.pause();
-							document.exitFullscreen();
+							if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
 						}
 						
 						// Modal'ı aç
