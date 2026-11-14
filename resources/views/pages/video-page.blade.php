@@ -238,10 +238,11 @@
 	<Modal size="lg" v-if="showGameModal" :hide-header="true" :allow-back-drop-click="false" :hide-footer="true">
 		<template v-slot:header> .. </template>
 		<template v-slot:body> 
-			{{-- İngilizce söyleme oyunu: 2 hayvan + 2 renk + 1 nesne. Mikrofon için allow="microphone" şart. --}}
+			{{-- Şimdilik eşleştirme oyunu (want-to). İngilizce söyleme oyununa dönmek için:
+			     src="/games/hayvan-ingilizce/index.html?animals=2&colors=2&objects=1&embed=1" allow="microphone; autoplay" --}}
 			<iframe
-				src="/games/hayvan-ingilizce/index.html?animals=2&colors=2&objects=1&embed=1"
-				allow="microphone; autoplay"
+				src="/games/want-to/index.html"
+				allow="autoplay"
 				style="width: min(1200px, 92vw); height: min(640px, 80vh); border: 0; border-radius: 24px; display: block;"
 			></iframe>
 		</template>

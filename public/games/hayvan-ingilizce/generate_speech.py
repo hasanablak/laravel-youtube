@@ -4,6 +4,7 @@
 
 Üretilenler (assets/speech/):
   tr/<anahtar>.mp3   Türkçe sorular ve tepkiler (index.html'deki TR_LINES ile aynı anahtarlar)
+  tr/words/<en>.mp3  Kelimelerin Türkçesi: "kedi." (dosya adı İngilizce kelime)
   en/<kelime>.mp3    İngilizce kelimeler: "Cat!", "Red!", "Apple!" (index.html'deki ANIMALS/COLORS/OBJECTS ile aynı)
 
 Anahtar sırasıyla şuralardan okunur: ELEVENLABS_API_KEY ortam değişkeni,
@@ -52,6 +53,26 @@ TR_LINES = {
     "bu-bir": "Bu bir...",
     "supersin": "Süpersin! Çok güzel söyledin!",
     "aferin": "Aferin sana! Yine oynayalım mı?",
+    # Türkçe yardım akışı: "Tamam! Türkçesi <kedi>, İngilizcesi de <cat>. Hadi şimdi sen de İngilizcesini söyle!"
+    "turkce-soyle": "İngilizcesini bilmiyorsan, Türkçesini söyle!",
+    "tamam-turkcesi": "Tamam! Türkçesi",
+    "ingilizcesi-de": "İngilizcesi de",
+    "sen-de-soyle": "Hadi şimdi sen de İngilizcesini söyle!",
+    # Çocuk "bilmiyorum" derse
+    "sorun-degil": "Sorun değil! Birlikte öğrenelim.",
+    "turkcesi": "Türkçesi",
+}
+
+# İngilizce kelime → Türkçesi (tr/words/<ingilizce>.mp3). index.html'deki "tr" alanlarıyla aynı.
+TR_WORDS = {
+    "cat": "kedi", "dog": "köpek", "cow": "inek", "sheep": "koyun", "horse": "at", "lion": "aslan",
+    "elephant": "fil", "monkey": "maymun", "frog": "kurbağa", "chicken": "tavuk", "rabbit": "tavşan",
+    "bird": "kuş", "bee": "arı", "giraffe": "zürafa", "whale": "balina", "bear": "ayı", "donkey": "eşek",
+    "camel": "deve", "crocodile": "timsah", "squirrel": "sincap",
+    "red": "kırmızı", "blue": "mavi", "green": "yeşil", "yellow": "sarı", "pink": "pembe", "purple": "mor",
+    "orange": "turuncu",
+    "apple": "elma", "ball": "top", "car": "araba", "star": "yıldız", "sun": "güneş", "house": "ev",
+    "flower": "çiçek", "book": "kitap", "cake": "pasta", "balloon": "balon", "banana": "muz", "moon": "ay",
 }
 
 EN_WORDS = [
@@ -116,6 +137,8 @@ def main() -> None:
     if args.only in (None, "tr"):
         for key, text in TR_LINES.items():
             jobs.append((VOICE_TR, text, SPEECH_DIR / "tr" / f"{key}.mp3", 0.5))
+        for en, tr in TR_WORDS.items():
+            jobs.append((VOICE_TR, f"{tr}.", SPEECH_DIR / "tr" / "words" / f"{en}.mp3", 0.55))
     if args.only in (None, "en"):
         for word in EN_WORDS:
             jobs.append((VOICE_EN, f"{word.capitalize()}!", SPEECH_DIR / "en" / f"{word}.mp3", 0.6))

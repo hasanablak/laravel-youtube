@@ -19,6 +19,11 @@
     - Konuşma tanıma Chrome/Edge/Safari'de çalışır, Firefox'ta çalışmaz; HTTPS veya localhost gerekir.
       Chrome'da ses tanıma için Google sunucularına gönderilir.
     - Sorular: ?animals=2&colors=2&objects=1 (varsayılan da bu). Portal ayrıca embed=1 ile açar.
+    - ?mod=tam: solda oyunlaştırılmış skor tablosu (çıkartma albümü, seviye, toplam yıldız);
+      geniş ekranda sağda Three.js koşu oyunu (runner.js): doğru cevapta engel gelir, koyun atlar.
+    - Türkçe yardım: ilk denemede bilemezse Türkçesi istenir (tr-TR dinlenir); bilirse kaydedilir ve
+      "Tamam! Türkçesi kedi, İngilizcesi de cat. Hadi şimdi sen de söyle!" diye İngilizceye yönlendirilir.
+    - İlerleme localStorage'da (ingilizce-soyle-ilerleme-v1): Leitner kutuları, soru seçimi buna göre.
     - Bitince portal için: postMessage({ status: 'success', score, total }); konuşma tanıma yoksa
       veya mikrofon izni verilmezse (embed=1'de) postMessage({ status: 'skipped', reason }).
     - Nesne resimleri: assets/images/objects/ — Microsoft Fluent Emoji 3D (MIT, LICENSE.txt)
@@ -125,11 +130,77 @@
     @keyframes ring { from { transform: scale(1); opacity: .8 } to { transform: scale(1.8); opacity: 0 } }
     @keyframes breathe { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.06) } }
     @keyframes confetti { from { transform: translate(0, 0) rotate(0); opacity: 1 } to { transform: translate(var(--dx), var(--dy)) rotate(var(--r)); opacity: 0 } }
+
+    /* ---------- ?mod=tam: solda skor tablosu ---------- */
+    .play-col { flex: 1; min-width: 0; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; }
+    .board[hidden] { display: none; }
+    body.mode-tam { flex-direction: row; align-items: stretch; }
+    body.mode-tam .overlay { left: 340px; }
+    .board {
+        width: 340px; flex: none; height: 100%; overflow-y: auto; background: #FFFFFF; border-radius: 0 34px 34px 0;
+        box-shadow: 6px 0 24px var(--shadow); padding: 18px 16px 24px; display: flex; flex-direction: column; gap: 16px;
+    }
+    .board__top { display: flex; align-items: center; gap: 12px; }
+    .trophy { width: 64px; height: 64px; flex: none; border-radius: 22px; background: linear-gradient(160deg, #FFE7A3, #FFC94D); display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 14px rgba(240, 169, 46, .35); }
+    .trophy svg { width: 38px; height: 38px; }
+    .total { font: 700 36px/1 'Fredoka', sans-serif; display: flex; align-items: center; gap: 6px; }
+    .total svg { width: 30px; height: 30px; }
+    .lvl { display: flex; flex-direction: column; gap: 6px; }
+    .lvl__row { display: flex; align-items: center; justify-content: space-between; font: 600 15px 'Fredoka', sans-serif; color: var(--muted); }
+    .lvl__badge { background: var(--lilac); color: #FFFFFF; border-radius: 999px; padding: 3px 12px; font-size: 15px; }
+    .segs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+    .segs span { height: 12px; border-radius: 999px; background: #F3E9F7; }
+    .segs span.on { background: linear-gradient(90deg, #B9A4FF, #FF8FB1); }
+    .cat { display: flex; flex-direction: column; gap: 8px; }
+    .cat__head { display: flex; align-items: center; gap: 8px; font: 600 14px 'Fredoka', sans-serif; color: var(--muted); }
+    .cat__icon { width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex: none; }
+    .cat__icon svg { width: 18px; height: 18px; }
+    .cat__bar { flex: 1; height: 8px; border-radius: 999px; background: #F3E9F7; overflow: hidden; }
+    .cat__bar i { display: block; height: 100%; border-radius: 999px; background: var(--mint); transition: width .5s; }
+    .album { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+    .tile { position: relative; aspect-ratio: 1; border-radius: 14px; background: #FFF5F8; display: flex; align-items: center; justify-content: center; transition: transform .3s; }
+    .tile img { width: 82%; height: 82%; object-fit: contain; }
+    .tile .dot { width: 64%; height: 64%; border-radius: 50%; }
+    .tile--new img, .tile--new .dot { filter: grayscale(1) brightness(1.15); opacity: .28; }
+    .tile--new::after { content: '?'; position: absolute; font: 700 18px 'Fredoka', sans-serif; color: #D9C9E6; }
+    .tile--seen img, .tile--seen .dot { opacity: .65; }
+    .tile--learned { background: #FFF6DA; box-shadow: inset 0 0 0 2px #FFD966; }
+    .tile--now { box-shadow: inset 0 0 0 3px var(--rose); animation: breathe 1.6s ease-in-out infinite; }
+    .tile .mini { position: absolute; bottom: -3px; left: 50%; transform: translateX(-50%); display: flex; }
+    .tile .mini svg { width: 9px; height: 9px; }
+    .tile .tr { position: absolute; top: -4px; right: -4px; font: 700 9px/1 'Nunito', sans-serif; color: #FFFFFF; background: #E5484D; border-radius: 6px; padding: 2px 3px; }
+    /* Sağ panel: koşu oyunu (sadece geniş ekranda) */
+    .runner { display: none; }
+    @media (min-width: 1100px) {
+        body.mode-tam .runner {
+            display: block; position: relative; width: 360px; flex: none; height: 100%;
+            border-radius: 34px 0 0 34px; overflow: hidden; box-shadow: -6px 0 24px var(--shadow); background: #CDEAFF;
+        }
+        body.mode-tam .overlay { right: 360px; }
+    }
+    .runner-hud {
+        position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px;
+        background: #FFFFFF; border-radius: 999px; padding: 6px 16px 6px 10px; box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
+        font: 700 26px/1 'Fredoka', sans-serif; color: var(--ink);
+    }
+    .runner-hud svg { width: 30px; height: 30px; }
+    .runner-hud.bump { animation: pop .5s cubic-bezier(.3, 1.6, .5, 1); }
+
+    @media (max-width: 760px) {
+        body.mode-tam { flex-direction: column; }
+        body.mode-tam .overlay { left: 0; top: 36vh; }
+        .board { width: 100%; height: auto; max-height: 36vh; border-radius: 0 0 28px 28px; box-shadow: 0 6px 24px var(--shadow); }
+        .album { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+    }
+
     @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
 
+<aside class="board" id="board" aria-label="İlerleme" hidden></aside>
+
+<div class="play-col">
 <div class="stars" id="stars" aria-label="Yıldızlar"></div>
 
 <main class="stage">
@@ -154,6 +225,9 @@
 
     <div class="heard" id="heard" aria-live="polite"></div>
 </main>
+</div>
+
+<aside class="runner" id="runner" aria-label="Koşan koyun"></aside>
 
 <!-- Başlangıç -->
 <div class="overlay" id="start">
@@ -192,6 +266,8 @@
     const count = (key, def) => Math.max(0, Math.min(10, parseInt(params.get(key) ?? def, 10) || 0));
     const PLAN = { animal: count('animals', 2), color: count('colors', 2), object: count('objects', 1) };
     const EMBED = params.get('embed') === '1';
+    const MODE_TAM = params.get('mod') === 'tam'; // solda skor tablosu, sağda koşu oyunu
+    let runner = null; // runner.js (sağ panel), sadece tam modda ve geniş ekranda
     let ROUNDS = 5;
 
     // Portala haber ver (video sayfası mesajı alınca pencereyi kapatıp çizgi filme devam eder)
@@ -250,6 +326,21 @@
 
     const PROMPT = { animal: 'soru', color: 'renk-soru', object: 'nesne-soru' };
 
+    // Türkçe karşılıklar: ilki seslendirilen ad (tr/words/<ingilizce>.mp3), diğerleri de kabul edilir
+    const TR = {
+        cat: ['kedi', 'kedicik', 'pisi', 'pisicik'], dog: ['köpek', 'köpekçik', 'kuçu'], cow: ['inek'],
+        sheep: ['koyun', 'kuzu'], horse: ['at', 'atçık'], lion: ['aslan'], elephant: ['fil'], monkey: ['maymun'],
+        frog: ['kurbağa'], chicken: ['tavuk', 'civciv'], rabbit: ['tavşan'], bird: ['kuş', 'kuşçuk', 'serçe'],
+        bee: ['arı'], giraffe: ['zürafa', 'zürefa'], whale: ['balina'], bear: ['ayı', 'ayıcık'], donkey: ['eşek'],
+        camel: ['deve'], crocodile: ['timsah'], squirrel: ['sincap'],
+        red: ['kırmızı'], blue: ['mavi'], green: ['yeşil'], yellow: ['sarı'], pink: ['pembe'], purple: ['mor'],
+        orange: ['turuncu'],
+        apple: ['elma'], ball: ['top'], car: ['araba'], star: ['yıldız'], sun: ['güneş'], house: ['ev'],
+        flower: ['çiçek', 'lale'], book: ['kitap'], cake: ['pasta', 'kek'], balloon: ['balon'], banana: ['muz'],
+        moon: ['ay', 'hilal'],
+    };
+    [...ANIMALS, ...COLORS, ...OBJECTS].forEach((q) => { q.tr = (TR[q.word] || [''])[0]; q.trAll = TR[q.word] || []; });
+
     /* ---------- İlerleme kaydı (Leitner kutuları) ----------
      * Rastgele değil: her kelimenin geçmişi tarayıcıda (localStorage) tutulur.
      *  - Hiç sorulmamış kelimeler önce gelir.
@@ -290,9 +381,10 @@
     };
 
     // Sonucu kaydet: firstTry → kutu atlar; sonradan bilirse kutu aynı kalır; bilemezse 1. kutuya döner
+    const stateOf = (q) => progress.items[keyOf(q)] || { box: 1, seen: 0, right: 0, wrong: 0, tr: 0, last: progress.game };
     const record = (q, outcome) => {
         const k = keyOf(q);
-        const st = progress.items[k] || { box: 1, seen: 0, right: 0, wrong: 0, last: progress.game };
+        const st = stateOf(q);
         st.seen++;
         st.last = progress.game;
         if (outcome === 'firstTry') { st.right++; st.box = Math.min(5, st.box + 1); }
@@ -300,7 +392,83 @@
         else { st.wrong++; st.box = 1; }
         progress.items[k] = st;
         saveProgress();
+        renderBoard();
     };
+    // Çocuk Türkçesini söyledi: kaydet (skor tablosunda "TR" rozeti)
+    const recordDunno = (q) => {
+        const st = stateOf(q);
+        st.dunno = (st.dunno || 0) + 1;
+        progress.items[keyOf(q)] = st;
+        saveProgress();
+    };
+    const recordTr = (q) => {
+        const st = stateOf(q);
+        st.tr = (st.tr || 0) + 1;
+        progress.items[keyOf(q)] = st;
+        saveProgress();
+        renderBoard();
+    };
+
+    /* ---------- Skor tablosu (?mod=tam) ----------
+     * Çıkartma albümü: öğrenilen (kutu ≥ 3) renkli + mini yıldızlar, görülmüş soluk, hiç görülmemiş gri "?".
+     * Türkçesini söylediği ama İngilizcesi henüz öğrenilmemiş kelimelerde "TR" rozeti.
+     * Seviye: her 5 öğrenilen kelimede bir.
+     */
+    const STAR_PATH = '<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/>';
+    const CATS = [
+        { key: 'animal', label: 'Hayvanlar', bg: '#FFE3D3', color: '#FF9A62', icon: '<circle cx="6" cy="10" r="2"/><circle cx="10" cy="5.5" r="2"/><circle cx="14" cy="5.5" r="2"/><circle cx="18" cy="10" r="2"/><path d="M8 18c0-3 2-6 4-6s4 3 4 6c0 2-2 2-4 1.5C10 20 8 20 8 18z"/>' },
+        { key: 'color', label: 'Renkler', bg: '#E8DDFF', color: '#9B5CF6', icon: '<circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9.5" r="1.4"/><circle cx="12.5" cy="7.5" r="1.4"/><circle cx="16" cy="10.5" r="1.4"/>' },
+        { key: 'object', label: 'Nesneler', bg: '#DCEEFF', color: '#3D8BFF', icon: '<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>' },
+    ];
+    const LIST = { animal: ANIMALS, color: COLORS, object: OBJECTS };
+    const isLearned = (st) => !!st && st.box >= 3;
+
+    function renderBoard() {
+        if (!MODE_TAM) return;
+        const board = $('board');
+        const all = [...ANIMALS, ...COLORS, ...OBJECTS];
+        const states = all.map((q) => progress.items[keyOf(q)]);
+        const learned = states.filter(isLearned).length;
+        const totalStars = states.reduce((n, st) => n + (st ? st.right : 0), 0);
+        const level = Math.floor(learned / 5) + 1;
+        const segs = learned % 5;
+        const now = current();
+
+        const tile = (q) => {
+            const st = progress.items[keyOf(q)];
+            const cls = !st ? 'tile--new' : isLearned(st) ? 'tile--learned' : 'tile--seen';
+            const nowCls = now && $('start').hidden && keyOf(now) === keyOf(q) ? ' tile--now' : ''; // şu an sorulan
+            const pic = q.type === 'color'
+                ? `<span class="dot" style="background:${q.hex}"></span>`
+                : `<img src="${q.src}" alt="" loading="lazy">`;
+            const stars = st ? Math.max(0, st.box - 1) : 0;
+            const mini = stars ? `<span class="mini">${Array.from({ length: stars }, () => `<svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#F0A92E" stroke-width="2">${STAR_PATH}</svg>`).join('')}</span>` : '';
+            const tr = st && st.tr && !isLearned(st) ? '<span class="tr">TR</span>' : '';
+            return `<div class="tile ${cls}${nowCls}" title="${q.word} · ${q.tr}">${pic}${mini}${tr}</div>`;
+        };
+
+        board.innerHTML = `
+            <div class="board__top">
+                <div class="trophy"><svg viewBox="0 0 24 24" fill="#FFFFFF"><path d="M7 3h10v3a5 5 0 0 1-10 0z"/><path d="M5 5H3a3 3 0 0 0 4 4M19 5h2a3 3 0 0 1-4 4" stroke="#FFFFFF" stroke-width="1.8" fill="none"/><path d="M10 12h4l-.5 4h-3zM8 18h8v3H8z"/></svg></div>
+                <div class="total" aria-label="Toplam yıldız">${totalStars}<svg viewBox="0 0 24 24" fill="#FFD966" stroke="#F0A92E" stroke-width="1.6" stroke-linejoin="round">${STAR_PATH}</svg></div>
+            </div>
+            <div class="lvl">
+                <div class="lvl__row"><span class="lvl__badge">Seviye ${level}</span><span>${learned} / ${all.length}</span></div>
+                <div class="segs">${Array.from({ length: 5 }, (_, i) => `<span class="${i < segs ? 'on' : ''}"></span>`).join('')}</div>
+            </div>
+            ${CATS.map((c) => {
+                const list = LIST[c.key];
+                const done = list.filter((q) => isLearned(progress.items[keyOf(q)])).length;
+                return `<section class="cat" aria-label="${c.label}">
+                    <div class="cat__head">
+                        <span class="cat__icon" style="background:${c.bg}"><svg viewBox="0 0 24 24" fill="none" stroke="${c.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg></span>
+                        <span class="cat__bar"><i style="width:${Math.round(done / list.length * 100)}%"></i></span>
+                        <span>${done}/${list.length}</span>
+                    </div>
+                    <div class="album">${list.map(tile).join('')}</div>
+                </section>`;
+            }).join('')}`;
+    }
 
     const STAR = '<path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/>';
     const $ = (id) => document.getElementById(id);
@@ -341,6 +509,12 @@
         neredeyse: 'Neredeyse! Hadi birlikte söyleyelim.',
         duyamadim: 'Seni duyamadım. Bir daha söyler misin?',
         'bu-bir': 'Bu bir',
+        'turkce-soyle': 'İngilizcesini bilmiyorsan, Türkçesini söyle!',
+        'tamam-turkcesi': 'Tamam! Türkçesi',
+        'ingilizcesi-de': 'İngilizcesi de',
+        'sen-de-soyle': 'Hadi şimdi sen de İngilizcesini söyle!',
+        'sorun-degil': 'Sorun değil! Birlikte öğrenelim.',
+        turkcesi: 'Türkçesi',
         supersin: 'Süpersin! Çok güzel söyledin!',
         aferin: 'Aferin sana! Yine oynayalım mı?',
     };
@@ -356,6 +530,19 @@
     });
     const sayLine = (key) => playFile(`assets/speech/tr/${key}.mp3`).catch(() => speak(TR_LINES[key]));
     const sayWord = (w) => playFile(`assets/speech/en/${w}.mp3`).catch(() => speak(w, 'en-US', 0.85));
+    const sayTr = (q) => playFile(`assets/speech/tr/words/${q.word}.mp3`).catch(() => speak(q.tr));
+
+    // "(Tamam!) Türkçesi kedi. İngilizcesi de cat. Hadi şimdi sen de İngilizcesini söyle!"
+    const teach = async (q, saidTurkish) => {
+        answer.textContent = `${q.tr} → ${q.word}`;
+        answer.classList.add('show');
+        await sayLine(saidTurkish ? 'tamam-turkcesi' : 'turkcesi');
+        await sayTr(q);
+        await sayLine('ingilizcesi-de');
+        await sayWord(q.word);
+        await sayLine('sen-de-soyle');
+        answer.classList.remove('show');
+    };
 
     /* ---------- Eşleştirme ---------- */
     const lev = (a, b) => {
@@ -392,16 +579,44 @@
         return false;
     };
 
+    // Türkçe eşleştirme: Türkçe harfleri sadeleştir (ç→c, ğ→g, ı→i, ö→o, ş→s, ü→u)
+    const foldTr = (x) => x.toLocaleLowerCase('tr-TR')
+        .replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u')
+        .replace(/[^a-z\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const matchesTr = (transcripts, q) => {
+        const targets = q.trAll.map(foldTr);
+        for (const raw of transcripts) {
+            const words = foldTr(raw).split(' ').filter(Boolean);
+            for (const c of [...words, words.join('')]) {
+                for (const t of targets) {
+                    if (c === t) return true;
+                    // "at", "ay", "ev" gibi kısa kelimelerde hoşgörü yok (ay ↔ ayı karışmasın)
+                    if (t.length >= 4 && c.length >= 3 && lev(c, t) <= (t.length >= 7 ? 2 : 1)) return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    // Çocuk "bilmiyorum" mu dedi? (Türkçe ya da İngilizce; en-US tanıyıcı Türkçeyi tuhaf yazabilir:
+    // "bill me your um" → "billmeyourum" içinde "billme"/"bilmi" geçer)
+    const DUNNO_PARTS = ['bilmiyo', 'bilmiyor', 'bilmem', 'bilemedim', 'bilemiyorum', 'hatirlamiyorum', 'bilmi', 'billme', 'billmi',
+        'idontknow', 'dontknow', 'idunno', 'dunno', 'noidea'];
+    const isDunno = (transcripts) => transcripts.some((raw) => {
+        const joined = foldTr(raw).replace(/\s/g, '').replace(/'/g, '');
+        return DUNNO_PARTS.some((p) => joined.includes(p));
+    });
+
     /* ---------- Konuşma tanıma ---------- */
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     let rec = null, listening = false;
 
-    const listen = () => new Promise((resolve) => {
+    // lang: 'en-US' (varsayılan) ya da 'tr-TR'; test: tanınan metinler doğru mu?
+    const listen = (lang = 'en-US', test = (all) => matches(all, current())) => new Promise((resolve) => {
         // resolve({ ok: true|false, heard: string, error?: string })
         if (!SR) return resolve({ ok: false, heard: '', error: 'unsupported' });
-        const animal = current();
         rec = new SR();
-        rec.lang = 'en-US';
+        rec.lang = lang;
         rec.interimResults = true;
         rec.maxAlternatives = 5;
         rec.continuous = false;
@@ -423,7 +638,8 @@
             }
             lastHeard = all[0] || lastHeard;
             heard.textContent = lastHeard ? `duyduğum: “${lastHeard.trim()}”` : '';
-            if (matches(all, animal)) return settle({ ok: true, heard: lastHeard });
+            if (test(all)) return settle({ ok: true, heard: lastHeard });
+            if (isDunno(all)) return settle({ ok: false, dunno: true, heard: lastHeard });
             const isFinal = e.results[e.results.length - 1].isFinal;
             if (isFinal) settle({ ok: false, heard: lastHeard });
         };
@@ -438,7 +654,7 @@
     });
 
     /* ---------- Oyun ---------- */
-    let deck = [], round = 0, tries = 0, score = 0, busy = false;
+    let deck = [], round = 0, tries = 0, score = 0, busy = false, askedTr = false;
     const current = () => deck[round];
 
     const renderStars = () => {
@@ -470,6 +686,8 @@
     const showAnimal = async () => {
         const a = current();
         tries = 0;
+        askedTr = false;
+        renderBoard();
         answer.classList.remove('show');
         check.classList.remove('show');
         heard.textContent = '';
@@ -507,6 +725,7 @@
         if (r.ok) {
             score++;
             record(a, tries === 0 ? 'firstTry' : 'later');
+            runner?.jumpOver(); // sağ panel: engel gelir, koyun atlar
             renderStars();
             check.classList.add('show');
             answer.textContent = a.word;
@@ -521,7 +740,47 @@
         }
 
         tries++;
-        animate('shake');
+
+        // "Bilmiyorum" dedi: üzme, yardım et (yanlış sallanması yok)
+        if (r.dunno) {
+            recordDunno(a);
+            await sayLine('sorun-degil');
+            // Türkçesi zaten sorulduysa ikisini birden öğret
+            if (askedTr || !a.trAll.length) {
+                await teach(a, false);
+                busy = false;
+                return attempt();
+            }
+        } else {
+            animate('shake');
+        }
+
+        // İlk denemede bilemediyse: Türkçesini sor; biliyorsa "Türkçesi şu, İngilizcesi de şu" diyerek yönlendir
+        if (!askedTr && tries < MAX_TRIES && a.trAll.length) {
+            askedTr = true;
+            await sayLine('turkce-soyle');
+            const t = await listen('tr-TR', (all) => matchesTr(all, a));
+            if (t.ok) {
+                recordTr(a);
+                await teach(a, true);
+                busy = false;
+                return attempt();
+            }
+            if (t.dunno) {
+                // Türkçesini de bilmiyor: ikisini birden öğret
+                recordDunno(a);
+                await sayLine('sorun-degil');
+                await teach(a, false);
+                busy = false;
+                return attempt();
+            }
+            // Türkçesi de çıkmadı: normal yardım akışı
+            await sayLine('neredeyse');
+            await sayWord(a.word);
+            busy = false;
+            return attempt();
+        }
+
         if (r.error === 'no-speech' && !r.heard) {
             await sayLine('duyamadim');
         } else if (tries < MAX_TRIES) {
@@ -531,6 +790,7 @@
 
         if (tries >= MAX_TRIES) {
             record(a, 'missed');
+            runner?.oops();
             answer.textContent = a.word;
             answer.classList.add('show');
             await sayLine('bu-bir');
@@ -582,8 +842,19 @@
     ear.addEventListener('click', () => { if (current() && !listening) sayWord(current().word); });
 
     if (EMBED) $('again').hidden = true;
+    if (MODE_TAM) {
+        document.body.classList.add('mode-tam');
+        $('board').hidden = false;
+        // Sağ panel koşu oyunu: sadece geniş ekranda; Three.js yalnızca burada yüklenir
+        if (matchMedia('(min-width: 1100px)').matches) {
+            import('./runner.js')
+                .then((m) => { runner = m.createRunner($('runner')); })
+                .catch(() => { $('runner').remove(); }); // WebGL/modül sorunu: panel olmadan devam
+        }
+    }
     ROUNDS = PLAN.animal + PLAN.color + PLAN.object || 5;
     renderStars();
+    renderBoard();
     if (!SR) {
         $('unsupported').hidden = false;
         $('play').disabled = true;
