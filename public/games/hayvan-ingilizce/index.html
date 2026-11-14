@@ -172,11 +172,11 @@
     /* Sağ panel: koşu oyunu (sadece geniş ekranda) */
     .runner { display: none; }
     @media (min-width: 1100px) {
-        body.mode-tam .runner {
+        body.mode-tam.runner-on .runner {
             display: block; position: relative; width: 360px; flex: none; height: 100%;
             border-radius: 34px 0 0 34px; overflow: hidden; box-shadow: -6px 0 24px var(--shadow); background: #CDEAFF;
         }
-        body.mode-tam .overlay { right: 360px; }
+        body.mode-tam.runner-on .overlay { right: 360px; }
     }
     .runner-hud {
         position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px;
@@ -268,6 +268,8 @@
     const EMBED = params.get('embed') === '1';
     const MODE_TAM = params.get('mod') === 'tam'; // solda skor tablosu, sağda koşu oyunu
     let runner = null; // runner.js (sağ panel), sadece tam modda ve geniş ekranda
+    // Sağ paneldeki koşu oyunu şimdilik gizli. Açmak için true yap.
+    const RUNNER_ENABLED = false;
     let ROUNDS = 5;
 
     // Portala haber ver (video sayfası mesajı alınca pencereyi kapatıp çizgi filme devam eder)
@@ -846,7 +848,8 @@
         document.body.classList.add('mode-tam');
         $('board').hidden = false;
         // Sağ panel koşu oyunu: sadece geniş ekranda; Three.js yalnızca burada yüklenir
-        if (matchMedia('(min-width: 1100px)').matches) {
+        if (RUNNER_ENABLED && matchMedia('(min-width: 1100px)').matches) {
+            document.body.classList.add('runner-on');
             import('./runner.js')
                 .then((m) => { runner = m.createRunner($('runner')); })
                 .catch(() => { $('runner').remove(); }); // WebGL/modül sorunu: panel olmadan devam
